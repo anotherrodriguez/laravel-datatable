@@ -68,8 +68,13 @@ table.dataTable.dtr-inline.collapsed > tbody > tr[role="row"] > th:first-child:b
     content: url(plus-circle-regular.svg);
     /* background-color: #ffffff; */
 }
+
 table.dataTable.dtr-inline.collapsed > tbody > tr.parent > td:first-child:before,
 table.dataTable.dtr-inline.collapsed > tbody > tr.parent > th:first-child:before {
   content: url(minus-circle-regular.svg);
-  /* background-color: #d33333; /*
+}
+
+.dataTables_paginate{
+    width: 50%;
+    float: right;
 }

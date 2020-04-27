@@ -28,7 +28,7 @@ class SiteController extends Controller
     {
         $sites = Site::select(['id', 'name', 'created_at', 'updated_at'])->get();
         return Datatables::of($sites)->addColumn('action', function ($sites) {
-                return '<a href="#edit-'.$sites->id.'" class="btn btn-xs btn-primary"><i class="fad fa-edit"></i> Edit</a>';
+                return '<a href="'.action('SiteController@edit', $sites->id).'"><i class="fad fa-pencil-alt"></i></a>';
             })->make(true);
     }
 
@@ -39,7 +39,8 @@ class SiteController extends Controller
      */
     public function create()
     {
-        //
+        //Show form to add new Sites
+        return view('sites-create');
     }
 
     /**
@@ -50,7 +51,23 @@ class SiteController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        //Save Site Data
+        $validatedData = $request->validate([
+            'name' => ['required', 'unique:sites', 'max:255'],
+        ]);
+
+        $site = new Site;
+
+        $site->name = request('name');
+
+        $site->save();
+
+        $message = [
+            'text' => "Success: Site ".$site->name." has been saved.",
+            'type' => "success"
+        ];
+
+        return redirect()->action('SiteController@index')->with('message', $message);
     }
 
     /**
@@ -73,6 +90,7 @@ class SiteController extends Controller
     public function edit(Site $site)
     {
         //
+        return view('sites-edit')->with('site', Site::find($site->id));
     }
 
     /**
@@ -84,7 +102,19 @@ class SiteController extends Controller
      */
     public function update(Request $request, Site $site)
     {
-        //
+        //Save Site Data
+        $validatedData = $request->validate([
+            'name' => ['required', 'unique:sites', 'max:255'],
+        ]);
+
+        $site->update(['name'=>request('name')]);
+
+        $message = [
+                'text' => "Success: Site ".$site->name." has been updated",
+                'type' => "success"
+            ];
+
+        return redirect()->action('SiteController@index')->with('message', $message);
     }
 
     /**
@@ -96,5 +126,25 @@ class SiteController extends Controller
     public function destroy(Site $site)
     {
         //
+        try{
+            $site->delete();
+
+            $message = [
+                'text' => "Success: Site ".$site->name." has been deleted.",
+                'type' => "success"
+            ];
+
+            return redirect()->action('SiteController@index')->with('message', 'Site deleted');
+        }
+        catch(\Illuminate\Database\QueryException $e){
+
+            $message = [
+                'text' => "Error: Patients, statuses, and/or departments are already assigned to this site.",
+                'type' => "error"
+            ];
+
+            return redirect()->action('SiteController@index')->with('message', $message);
+
+        }
     }
 }

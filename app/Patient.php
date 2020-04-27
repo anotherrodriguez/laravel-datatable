@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Department extends Model
+class Patient extends Model
 {
     /**
      * The attributes that are mass assignable.
@@ -12,24 +12,18 @@ class Department extends Model
      * @var array
      */
     protected $fillable = [
-        'name'
+        'first_name',
+        'last_name',
+        'email',
+        'phone_number'
     ];
 
      /**
      * Get the site that owns the department.
      */
-    public function site()
-    {
-        return $this->belongsTo('App\Site');
-    }
-
-    public function patient()
-    {
-        return $this->hasMany('App\Patient');
-    }
-
     public function status()
     {
-        return $this->hasMany('App\Status');
+        return $this->belongsTo('App\Status');
     }
+
 }

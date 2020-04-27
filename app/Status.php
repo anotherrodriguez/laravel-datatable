@@ -4,9 +4,10 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Department extends Model
+class Status extends Model
 {
-    /**
+    //
+        /**
      * The attributes that are mass assignable.
      *
      * @var array
@@ -15,12 +16,9 @@ class Department extends Model
         'name'
     ];
 
-     /**
-     * Get the site that owns the department.
-     */
-    public function site()
+        public function department()
     {
-        return $this->belongsTo('App\Site');
+        return $this->belongsTo('App\Department');
     }
 
     public function patient()
@@ -28,8 +26,4 @@ class Department extends Model
         return $this->hasMany('App\Patient');
     }
 
-    public function status()
-    {
-        return $this->hasMany('App\Status');
-    }
 }

@@ -17,9 +17,21 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/test', 'SiteController@getData')->name('site.getData');
+Route::get('/siteData', 'SiteController@getData')->name('site.getData');
+
+Route::get('/departmentData', 'DepartmentController@getData')->name('department.getData');
+
+Route::get('/statusData', 'StatusController@getData')->name('status.getData');
+
+Route::get('/patientData', 'PatientController@getData')->name('patient.getData');
+
+Route::post('/getDepartments', 'DepartmentController@getDepartments');
+
+Route::post('/getStatuses', 'StatusController@getStatuses');
 
 Route::resources([
     'sites' => 'SiteController',
-    'departments' => 'DepartmentController'
+    'departments' => 'DepartmentController',
+    'statuses' => 'StatusController',
+    'patients' => 'PatientController'
 ]);

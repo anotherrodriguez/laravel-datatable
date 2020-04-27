@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', 'Sites')
+@section('title', 'Statuses')
 
 @section('content')
         <div class="row justify-content-center table-responsive mx-0">
@@ -8,8 +8,9 @@
             <thead>
               <tr>
                 <th></th>
-                <th>ID</th>
-                <th>Name</th>
+                <th>Status</th>
+                <th>Site</th>
+                <th>Department</th>
               </tr>
             </thead>
              <tbody>
@@ -21,16 +22,17 @@
 @section('datatable', true)
 
 @push('datatableOptions')
-          ajax: '<?php echo route('site.getData'); ?>',
+          ajax: '<?php echo route('status.getData'); ?>',
           columns: [
               { data: 'action', name: 'action', orderable: false, searchable: false, width: '30px'},
-              { data: 'id', name: 'id' },
-              { data: 'name', name: 'name' }
+              { data: 'name'},
+              { data: 'department.site.name'},
+              { data: 'department.name'}
           ]
 @endpush
 
 @push('jQueryScriptDatatable')
 
-    addButtonLink = '<?php echo action('SiteController@create'); ?>';
+    addButtonLink = '<?php echo action('StatusController@create'); ?>';
 
 @endpush
