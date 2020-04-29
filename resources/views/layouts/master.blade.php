@@ -77,6 +77,9 @@
   <!-- DataTables core JavaScript -->
   {{ HTML::script('scripts/DataTables/datatables.min.js') }}
 
+    <!-- Input mask core JavaScript -->
+  {{ HTML::script('scripts/jquery/jquery.inputmask.min.js') }}
+
   <!-- Menu Toggle Script -->
   <script>
   $(document).ready(function() {

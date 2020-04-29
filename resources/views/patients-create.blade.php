@@ -21,7 +21,7 @@
       <small id="siteHelp" class="form-text text-muted">Enter last name.</small>
       {{ Form::email('email', $value = NULL,['class' => 'form-control']) }}
       <small id="siteHelp" class="form-text text-muted">Enter email.</small>
-      {{ Form::number('phone_number', $value = NULL,['class' => 'form-control']) }}
+      {{ Form::text('phone_number', $value = NULL,['class' => 'form-control', 'id' => 'phone']) }}
       <small id="siteHelp" class="form-text text-muted">Enter phone number.</small>
     </div>
 
@@ -84,5 +84,14 @@
                }
             });
     })
+
+
+    $("#phone").inputmask({
+      "mask": "(999) 999-9999",
+      onUnMask: function(maskedValue, unmaskedValue) {
+      //do something with the value
+      return unmaskedValue;
+      }
+    });
 
 @endpush

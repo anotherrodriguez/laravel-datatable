@@ -58,7 +58,6 @@ class PatientController extends Controller
             'first_name' => ['required', 'max:255'],
             'last_name' => ['required', 'max:255'],
             'email' => ['required', 'email'],
-            'phone_number' => ['size:10'],
             'status_id' => ['required']
         ]);
 
@@ -103,7 +102,7 @@ class PatientController extends Controller
         //
         $sites = \App\Site::pluck('name', 'id')->toArray();
         $departments = \App\Department::pluck('name', 'id')->toArray();
-        $statuses = \App\Status::pluck('name', 'id')->toArray();
+        $statuses = \App\Status::where('department_id', $patient->status->department->id)->pluck('name', 'id')->toArray();
         $patient = Patient::with('status.department.site')->find($patient->id);
         return view('patients-edit', ['patient' => $patient, 'sites' => $sites, 'departments' => $departments, 'statuses' => $statuses]);
 

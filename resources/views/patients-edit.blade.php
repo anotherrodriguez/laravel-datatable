@@ -20,9 +20,9 @@
       {{ Form::label('inputDepartment', 'Last Name')}}
       {{ Form::text('last_name', $value = NULL,['class' => 'form-control']) }}
       {{ Form::label('inputDepartment', 'email')}}
-      {{ Form::text('email', $value = NULL,['class' => 'form-control']) }}
+      {{ Form::text('email', $value = NULL,['class' => 'form-control', 'disabled' => 'disabled']) }}
       {{ Form::label('inputDepartment', 'Phone Number')}}
-      {{ Form::text('phone_number', $value = NULL,['class' => 'form-control']) }}
+      {{ Form::text('phone_number', $value = NULL,['class' => 'form-control', 'disabled' => 'disabled']) }}
     </div>
 
     <button type="submit" class="btn btn-primary float-right">Update</button>
