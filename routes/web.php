@@ -13,10 +13,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
 Route::get('/siteData', 'SiteController@getData')->name('site.getData');
 
 Route::get('/departmentData', 'DepartmentController@getData')->name('department.getData');
