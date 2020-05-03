@@ -14,7 +14,13 @@
       {{ Form::label('inputDepartment', 'Department Name')}}
       {{ Form::select('department_id', $departments, $status->department->id, ['placeholder' => 'Pick a department...', 'class' => 'form-control', 'id' => 'department_select']) }}
       {{ Form::label('inputDepartment', 'Status')}}
-      {{ Form::text('name', $value = NULL,['class' => 'form-control']) }}
+      {{ Form::text('name', $value = NULL,['class' => 'form-control', 'id' => 'status_name']) }}
+      {{ Form::label('inputSite', 'List Order')}}
+              <!-- List with handle -->
+            <div class="list-group" id="listWithHandle"></div>
+
+
+
     </div>
 
     <button type="submit" class="btn btn-primary float-right">Update</button>
@@ -43,6 +49,53 @@
 
 @push('jQueryScript')
 
+    var i = 0;
+
+    function buttonHtml(status, hiddenField){
+      var button = '<button type="button" id="'+status.id+'" class="list-group-item list-group-item-action">'+status.name + hiddenField +'<i class="fas fa-grip-lines float-right mt-1"></i></button>';
+      return button;
+    };
+
+    function setOrder(){
+      var k = 0;
+        $.each($('.status-order'), function(key, status){
+          status.value = k;
+          k++;
+        });
+     };
+
+    // List with handle
+    var sortable = $('#listWithHandle').sortable({
+      handle: '.list-group-item',
+      onUpdate: setOrder
+    });
+
+    $('#status_name').keyup(function(){
+      $('#{{ $status->id }}').html($(this).val());
+
+    });
+
+    function loadList(){
+      $.ajax({
+               type:'POST',
+               url:'/getStatuses',
+               data:{
+               'department_id':$('#department_select').val()
+                },
+               success:function(data) {
+                $.each(data, function(key, status){
+                   var hiddenField = '<input name="status['+i+'][id]" value="'+status.id+'" type="hidden">';
+                  hiddenField += '<input class="status-order" name="status['+i+'][order]" value="'+status.list_order+'" type="hidden">';
+                  hiddenField += '<input class="status-order" name="status['+i+'][name]" value="'+status.name+'" type="hidden">';
+                  var button = buttonHtml(status, hiddenField);
+                   $('#listWithHandle').append(button);
+                   i++;
+                });
+                $('#{{ $status->id }}').addClass('active');
+               }
+            });
+    };
+
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -60,12 +113,16 @@
                var option = '<option selected="selected" value="">Pick a department...</option>';
                var options = option;
                $.each(data, function(key, department){
-                  console.log(department.name);
                   options += '<option value="'+department.id+'">'+department.name+'</option>';
                 });
                 $('#department_select').html(options);
                }
             });
     });
+
+    $('#department_select').change(loadList());
+
+    
+
 
 @endpush

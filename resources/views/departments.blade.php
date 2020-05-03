@@ -21,6 +21,7 @@
 @section('datatable', true)
 
 @push('datatableOptions')
+          order: [[ 1, 'asc' ]],
           ajax: '<?php echo route('department.getData'); ?>',
           columns: [
               { data: 'action', name: 'action', orderable: false, searchable: false, width: '30px'},

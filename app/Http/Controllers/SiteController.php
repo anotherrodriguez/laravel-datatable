@@ -26,11 +26,65 @@ class SiteController extends Controller
      */
     public function getData()
     {
-        $sites = Site::select(['id', 'name', 'created_at', 'updated_at'])->get();
+        $sites = Site::select(['id', 'name', 'address', 'city', 'state', 'zip_code'])->get();
         return Datatables::of($sites)->addColumn('action', function ($sites) {
                 return '<a href="'.action('SiteController@edit', $sites->id).'"><i class="fad fa-pencil-alt"></i></a>';
             })->make(true);
     }
+
+    public static $states = [
+        'AL' => 'Alabama',
+        'AK' => 'Alaska',
+        'AZ' => 'Arizona',
+        'AR' => 'Arkansas',
+        'CA' => 'California',
+        'CO' => 'Colorado',
+        'CT' => 'Connecticut',
+        'DE' => 'Delaware',
+        'DC' => 'District Of Columbia',
+        'FL' => 'Florida',
+        'GA' => 'Georgia',
+        'HI' => 'Hawaii',
+        'ID' => 'Idaho',
+        'IL' => 'Illinois',
+        'IN' => 'Indiana',
+        'IA' => 'Iowa',
+        'KS' => 'Kansas',
+        'KY' => 'Kentucky',
+        'LA' => 'Louisiana',
+        'ME' => 'Maine',
+        'MD' => 'Maryland',
+        'MA' => 'Massachusetts',
+        'MI' => 'Michigan',
+        'MN' => 'Minnesota',
+        'MS' => 'Mississippi',
+        'MO' => 'Missouri',
+        'MT' => 'Montana',
+        'NE' => 'Nebraska',
+        'NV' => 'Nevada',
+        'NH' => 'New Hampshire',
+        'NJ' => 'New Jersey',
+        'NM' => 'New Mexico',
+        'NY' => 'New York',
+        'NC' => 'North Carolina',
+        'ND' => 'North Dakota',
+        'OH' => 'Ohio',
+        'OK' => 'Oklahoma',
+        'OR' => 'Oregon',
+        'PA' => 'Pennsylvania',
+        'RI' => 'Rhode Island',
+        'SC' => 'South Carolina',
+        'SD' => 'South Dakota',
+        'TN' => 'Tennessee',
+        'TX' => 'Texas',
+        'UT' => 'Utah',
+        'VT' => 'Vermont',
+        'VA' => 'Virginia',
+        'WA' => 'Washington',
+        'WV' => 'West Virginia',
+        'WI' => 'Wisconsin',
+        'WY' => 'Wyoming'             
+    ];
 
     /**
      * Show the form for creating a new resource.
@@ -40,7 +94,7 @@ class SiteController extends Controller
     public function create()
     {
         //Show form to add new Sites
-        return view('sites-create');
+        return view('sites-create-edit', ['states' => self::$states]);
     }
 
     /**
@@ -54,11 +108,19 @@ class SiteController extends Controller
         //Save Site Data
         $validatedData = $request->validate([
             'name' => ['required', 'unique:sites', 'max:255'],
+            'address' => ['required'],
+            'city' => ['required'],
+            'state' => ['required'],
+            'zip_code' => ['required']
         ]);
 
         $site = new Site;
 
         $site->name = request('name');
+        $site->address = request('address');
+        $site->city = request('city');
+        $site->state = request('state');
+        $site->zip_code = request('zip_code');
 
         $site->save();
 
@@ -90,7 +152,7 @@ class SiteController extends Controller
     public function edit(Site $site)
     {
         //
-        return view('sites-edit')->with('site', Site::find($site->id));
+        return view('sites-create-edit',['site' => Site::find($site->id), 'states' => self::$states, 'edit' => true]);
     }
 
     /**
@@ -107,7 +169,13 @@ class SiteController extends Controller
             'name' => ['required', 'unique:sites', 'max:255'],
         ]);
 
-        $site->update(['name'=>request('name')]);
+        $site->update([
+            'name'=>request('name'),
+            'address'=>request('address'),
+            'city'=>request('city'),
+            'state'=>request('state'),
+            'zip_code'=>request('zip_code'),
+        ]);
 
         $message = [
                 'text' => "Success: Site ".$site->name." has been updated",

@@ -20,6 +20,9 @@
   <!-- Custom styles for DataTables -->
   {{ HTML::style('scripts/DataTables/datatables.css') }}
 
+    <!-- Custom styles for date picker -->
+  {{ HTML::style('css/bootstrap-datepicker3.min.css') }}
+
   <!-- Custom styles for FontAwesome -->
   <script src="https://kit.fontawesome.com/4dd735f7dd.js" crossorigin="anonymous"></script>
  
@@ -80,6 +83,13 @@
     <!-- Input mask core JavaScript -->
   {{ HTML::script('scripts/jquery/jquery.inputmask.min.js') }}
 
+    <!-- Datepicker JavaScript -->
+  {{ HTML::script('scripts/datepicker/bootstrap-datepicker.min.js') }}
+
+    <!-- Datepicker JavaScript -->
+  {{ HTML::script('scripts/sortable/Sortable.min.js') }}
+  {{ HTML::script('scripts/sortable/jquery-sortable.js') }}
+
   <!-- Menu Toggle Script -->
   <script>
   $(document).ready(function() {
@@ -99,7 +109,6 @@
 @hasSection('datatable')
 
     $('#patient-table').DataTable({
-        order: [[ 1, 'asc' ]],
         dom: 'frt<"bottom"p>',
         responsive: true,
         processing: true,

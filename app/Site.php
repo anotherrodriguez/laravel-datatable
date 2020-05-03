@@ -12,7 +12,11 @@ class Site extends Model
      * @var array
      */
     protected $fillable = [
-        'name'
+        'name',
+        'address',
+        'city',
+        'state',
+        'zip_code'
     ];
 
      /**

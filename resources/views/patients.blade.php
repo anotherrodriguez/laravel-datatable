@@ -11,6 +11,7 @@
                 <th>Patient</th>
                 <th>Status</th>
                 <th>Site</th>
+                <th>Date of Service</th>
                 <th>Department</th>
               </tr>
             </thead>
@@ -23,6 +24,7 @@
 @section('datatable', true)
 
 @push('datatableOptions')
+          order: [[ 1, 'asc' ]],
           ajax: '<?php echo route('patient.getData'); ?>',
           columns: [
               { data: 'action', name: 'action', orderable: false, searchable: false, width: '30px'},
@@ -32,6 +34,7 @@
               }},
               { data: 'status.name'},
               { data: 'status.department.site.name'},
+              { data: 'date_of_service'},
               { data: 'status.department.name', name: 'name' }
           ]
 @endpush

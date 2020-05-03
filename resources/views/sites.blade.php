@@ -8,8 +8,11 @@
             <thead>
               <tr>
                 <th></th>
-                <th>ID</th>
                 <th>Name</th>
+                <th>Address</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Zip Code</th>
               </tr>
             </thead>
              <tbody>
@@ -21,11 +24,15 @@
 @section('datatable', true)
 
 @push('datatableOptions')
+          order: [[ 1, 'asc' ]],
           ajax: '<?php echo route('site.getData'); ?>',
           columns: [
               { data: 'action', name: 'action', orderable: false, searchable: false, width: '30px'},
-              { data: 'id', name: 'id' },
-              { data: 'name', name: 'name' }
+              { data: 'name'},
+              { data: 'address'},
+              { data: 'city'},
+              { data: 'state'},
+              { data: 'zip_code'}
           ]
 @endpush
 

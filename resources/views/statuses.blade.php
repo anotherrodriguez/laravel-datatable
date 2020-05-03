@@ -22,13 +22,17 @@
 @section('datatable', true)
 
 @push('datatableOptions')
+          order: [[ 3, 'asc' ]],
           ajax: '<?php echo route('status.getData'); ?>',
           columns: [
               { data: 'action', name: 'action', orderable: false, searchable: false, width: '30px'},
               { data: 'name'},
               { data: 'department.site.name'},
               { data: 'department.name'}
-          ]
+          ],
+          rowGroup: {
+            dataSrc: 'department.name'
+        }
 @endpush
 
 @push('jQueryScriptDatatable')

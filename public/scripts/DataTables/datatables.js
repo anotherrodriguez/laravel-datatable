@@ -4,10 +4,10 @@
  *
  * To rebuild or modify this file with the latest versions of the included
  * software please visit:
- *   https://datatables.net/download/#bs4/dt-1.10.20/r-2.2.3/rr-1.2.6
+ *   https://datatables.net/download/#bs4/dt-1.10.20/r-2.2.3/rg-1.1.1
  *
  * Included libraries:
- *   DataTables 1.10.20, Responsive 2.2.3, RowReorder 1.2.6
+ *   DataTables 1.10.20, Responsive 2.2.3, RowGroup 1.1.1
  */
 
 /*! DataTables 1.10.20
@@ -13921,7 +13921,7 @@
 		 *
 		 *  @type string
 		 */
-		build:"bs4/dt-1.10.20/r-2.2.3/rr-1.2.6",
+		build:"bs4/dt-1.10.20/r-2.2.3/rg-1.1.1",
 	
 	
 		/**
@@ -16927,18 +16927,18 @@ return Responsive;
 }));
 
 
-/*! RowReorder 1.2.6
- * 2015-2019 SpryMedia Ltd - datatables.net/license
+/*! RowGroup 1.1.1
+ * ©2017-2019 SpryMedia Ltd - datatables.net/license
  */
 
 /**
- * @summary     RowReorder
- * @description Row reordering extension for DataTables
- * @version     1.2.6
- * @file        dataTables.rowReorder.js
+ * @summary     RowGroup
+ * @description RowGrouping for DataTables
+ * @version     1.1.1
+ * @file        dataTables.rowGroup.js
  * @author      SpryMedia Ltd (www.sprymedia.co.uk)
- * @contact     www.sprymedia.co.uk/contact
- * @copyright   Copyright 2015-2019 SpryMedia Ltd.
+ * @contact     datatables.net
+ * @copyright   Copyright 2017-2019 SpryMedia Ltd.
  *
  * This source file is free software, available under the following license:
  *   MIT license - http://datatables.net/license/mit
@@ -16980,771 +16980,424 @@ return Responsive;
 var DataTable = $.fn.dataTable;
 
 
-/**
- * RowReorder provides the ability in DataTables to click and drag rows to
- * reorder them. When a row is dropped the data for the rows effected will be
- * updated to reflect the change. Normally this data point should also be the
- * column being sorted upon in the DataTable but this does not need to be the
- * case. RowReorder implements a "data swap" method - so the rows being
- * reordered take the value of the data point from the row that used to occupy
- * the row's new position.
- *
- * Initialisation is done by either:
- *
- * * `rowReorder` parameter in the DataTable initialisation object
- * * `new $.fn.dataTable.RowReorder( table, opts )` after DataTables
- *   initialisation.
- * 
- *  @class
- *  @param {object} settings DataTables settings object for the host table
- *  @param {object} [opts] Configuration options
- *  @requires jQuery 1.7+
- *  @requires DataTables 1.10.7+
- */
-var RowReorder = function ( dt, opts ) {
+var RowGroup = function ( dt, opts ) {
 	// Sanity check that we are using DataTables 1.10 or newer
 	if ( ! DataTable.versionCheck || ! DataTable.versionCheck( '1.10.8' ) ) {
-		throw 'DataTables RowReorder requires DataTables 1.10.8 or newer';
+		throw 'RowGroup requires DataTables 1.10.8 or newer';
 	}
 
 	// User and defaults configuration object
 	this.c = $.extend( true, {},
-		DataTable.defaults.rowReorder,
-		RowReorder.defaults,
+		DataTable.defaults.rowGroup,
+		RowGroup.defaults,
 		opts
 	);
 
 	// Internal settings
 	this.s = {
-		/** @type {integer} Scroll body top cache */
-		bodyTop: null,
-
-		/** @type {DataTable.Api} DataTables' API instance */
-		dt: new DataTable.Api( dt ),
-
-		/** @type {function} Data fetch function */
-		getDataFn: DataTable.ext.oApi._fnGetObjectDataFn( this.c.dataSrc ),
-
-		/** @type {array} Pixel positions for row insertion calculation */
-		middles: null,
-
-		/** @type {Object} Cached dimension information for use in the mouse move event handler */
-		scroll: {},
-
-		/** @type {integer} Interval object used for smooth scrolling */
-		scrollInterval: null,
-
-		/** @type {function} Data set function */
-		setDataFn: DataTable.ext.oApi._fnSetObjectDataFn( this.c.dataSrc ),
-
-		/** @type {Object} Mouse down information */
-		start: {
-			top: 0,
-			left: 0,
-			offsetTop: 0,
-			offsetLeft: 0,
-			nodes: []
-		},
-
-		/** @type {integer} Window height cached value */
-		windowHeight: 0,
-
-		/** @type {integer} Document outer height cached value */
-		documentOuterHeight: 0,
-
-		/** @type {integer} DOM clone outer height cached value */
-		domCloneOuterHeight: 0
+		dt: new DataTable.Api( dt )
 	};
 
 	// DOM items
 	this.dom = {
-		/** @type {jQuery} Cloned row being moved around */
-		clone: null,
 
-		/** @type {jQuery} DataTables scrolling container */
-		dtScroll: $('div.dataTables_scrollBody', this.s.dt.table().container())
 	};
 
-	// Check if row reorder has already been initialised on this table
+	// Check if row grouping has already been initialised on this table
 	var settings = this.s.dt.settings()[0];
-	var exisiting = settings.rowreorder;
-	if ( exisiting ) {
-		return exisiting;
+	var existing = settings.rowGroup;
+	if ( existing ) {
+		return existing;
 	}
 
-	settings.rowreorder = this;
+	settings.rowGroup = this;
 	this._constructor();
 };
 
 
-$.extend( RowReorder.prototype, {
+$.extend( RowGroup.prototype, {
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-	 * Constructor
+	 * API methods for DataTables API interface
 	 */
 
 	/**
-	 * Initialise the RowReorder instance
-	 *
-	 * @private
+	 * Get/set the grouping data source - need to call draw after this is
+	 * executed as a setter
+	 * @returns string~RowGroup
+	 */
+	dataSrc: function ( val )
+	{
+		if ( val === undefined ) {
+			return this.c.dataSrc;
+		}
+
+		var dt = this.s.dt;
+
+		this.c.dataSrc = val;
+
+		$(dt.table().node()).triggerHandler( 'rowgroup-datasrc.dt', [ dt, val ] );
+
+		return this;
+	},
+
+	/**
+	 * Disable - need to call draw after this is executed
+	 * @returns RowGroup
+	 */
+	disable: function ()
+	{
+		this.c.enable = false;
+		return this;
+	},
+
+	/**
+	 * Enable - need to call draw after this is executed
+	 * @returns RowGroup
+	 */
+	enable: function ( flag )
+	{
+		if ( flag === false ) {
+			return this.disable();
+		}
+
+		this.c.enable = true;
+		return this;
+	},
+
+
+	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+	 * Constructor
 	 */
 	_constructor: function ()
 	{
 		var that = this;
 		var dt = this.s.dt;
-		var table = $( dt.table().node() );
 
-		// Need to be able to calculate the row positions relative to the table
-		if ( table.css('position') === 'static' ) {
-			table.css( 'position', 'relative' );
-		}
-
-		// listen for mouse down on the target column - we have to implement
-		// this rather than using HTML5 drag and drop as drag and drop doesn't
-		// appear to work on table rows at this time. Also mobile browsers are
-		// not supported.
-		// Use `table().container()` rather than just the table node for IE8 -
-		// otherwise it only works once...
-		$(dt.table().container()).on( 'mousedown.rowReorder touchstart.rowReorder', this.c.selector, function (e) {
-			if ( ! that.c.enable ) {
-				return;
-			}
-
-			// Ignore excluded children of the selector
-			if ( $(e.target).is(that.c.excludedChildren) ) {
-				return true;
-			}
-
-			var tr = $(this).closest('tr');
-			var row = dt.row( tr );
-
-			// Double check that it is a DataTable row
-			if ( row.any() ) {
-				that._emitEvent( 'pre-row-reorder', {
-					node: row.node(),
-					index: row.index()
-				} );
-
-				that._mouseDown( e, tr );
-				return false;
+		dt.on( 'draw.dtrg', function () {
+			if ( that.c.enable ) {
+				that._draw();
 			}
 		} );
 
-		dt.on( 'destroy.rowReorder', function () {
-			$(dt.table().container()).off( '.rowReorder' );
-			dt.off( '.rowReorder' );
+		dt.on( 'column-visibility.dt.dtrg responsive-resize.dt.dtrg', function () {
+			that._adjustColspan();
 		} );
+
+		dt.on( 'destroy', function () {
+			dt.off( '.dtrg' );
+		} );
+
+		dt.on('responsive-resize.dt', function () {
+			that._adjustColspan();
+		})
 	},
 
 
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	 * Private methods
 	 */
-	
+
 	/**
-	 * Cache the measurements that RowReorder needs in the mouse move handler
-	 * to attempt to speed things up, rather than reading from the DOM.
-	 *
+	 * Adjust column span when column visibility changes
 	 * @private
 	 */
-	_cachePositions: function ()
+	_adjustColspan: function ()
+	{
+		$( 'tr.'+this.c.className, this.s.dt.table().body() ).find('td')
+			.attr( 'colspan', this._colspan() );
+	},
+
+	/**
+	 * Get the number of columns that a grouping row should span
+	 * @private
+	 */
+	_colspan: function ()
+	{
+		return this.s.dt.columns().visible().reduce( function (a, b) {
+			return a + b;
+		}, 0 );
+	},
+
+
+	/**
+	 * Update function that is called whenever we need to draw the grouping rows.
+	 * This is basically a bootstrap for the self iterative _group and _groupDisplay
+	 * methods
+	 * @private
+	 */
+	_draw: function ()
 	{
 		var dt = this.s.dt;
+		var groupedRows = this._group( 0, dt.rows( { page: 'current' } ).indexes() );
 
-		// Frustratingly, if we add `position:relative` to the tbody, the
-		// position is still relatively to the parent. So we need to adjust
-		// for that
-		var headerHeight = $( dt.table().node() ).find('thead').outerHeight();
-
-		// Need to pass the nodes through jQuery to get them in document order,
-		// not what DataTables thinks it is, since we have been altering the
-		// order
-		var nodes = $.unique( dt.rows( { page: 'current' } ).nodes().toArray() );
-		var tops = $.map( nodes, function ( node, i ) {
-			return $(node).position().top - headerHeight;
-		} );
-
-		var middles = $.map( tops, function ( top, i ) {
-			return tops.length < i-1 ?
-				(top + tops[i+1]) / 2 :
-				(top + top + $( dt.row( ':last-child' ).node() ).outerHeight() ) / 2;
-		} );
-
-		this.s.middles = middles;
-		this.s.bodyTop = $( dt.table().body() ).offset().top;
-		this.s.windowHeight = $(window).height();
-		this.s.documentOuterHeight = $(document).outerHeight();
+		this._groupDisplay( 0, groupedRows );
 	},
 
-
 	/**
-	 * Clone a row so it can be floated around the screen
-	 *
-	 * @param  {jQuery} target Node to be cloned
+	 * Get the grouping information from a data set (index) of rows
+	 * @param {number} level Nesting level
+	 * @param {DataTables.Api} rows API of the rows to consider for this group
+	 * @returns {object[]} Nested grouping information - it is structured like this:
+	 *	{
+	 *		dataPoint: 'Edinburgh',
+	 *		rows: [ 1,2,3,4,5,6,7 ],
+	 *		children: [ {
+	 *			dataPoint: 'developer'
+	 *			rows: [ 1, 2, 3 ]
+	 *		},
+	 *		{
+	 *			dataPoint: 'support',
+	 *			rows: [ 4, 5, 6, 7 ]
+	 *		} ]
+	 *	}
 	 * @private
 	 */
-	_clone: function ( target )
-	{
+	_group: function ( level, rows ) {
+		var fns = $.isArray( this.c.dataSrc ) ? this.c.dataSrc : [ this.c.dataSrc ];
+		var fn = DataTable.ext.oApi._fnGetObjectDataFn( fns[ level ] );
 		var dt = this.s.dt;
-		var clone = $( dt.table().node().cloneNode(false) )
-			.addClass( 'dt-rowReorder-float' )
-			.append('<tbody/>')
-			.append( target.clone( false ) );
-
-		// Match the table and column widths - read all sizes before setting
-		// to reduce reflows
-		var tableWidth = target.outerWidth();
-		var tableHeight = target.outerHeight();
-		var sizes = target.children().map( function () {
-			return $(this).width();
-		} );
-
-		clone
-			.width( tableWidth )
-			.height( tableHeight )
-			.find('tr').children().each( function (i) {
-				this.style.width = sizes[i]+'px';
-			} );
-
-		// Insert into the document to have it floating around
-		clone.appendTo( 'body' );
-
-		this.dom.clone = clone;
-		this.s.domCloneOuterHeight = clone.outerHeight();
-	},
-
-
-	/**
-	 * Update the cloned item's position in the document
-	 *
-	 * @param  {object} e Event giving the mouse's position
-	 * @private
-	 */
-	_clonePosition: function ( e )
-	{
-		var start = this.s.start;
-		var topDiff = this._eventToPage( e, 'Y' ) - start.top;
-		var leftDiff = this._eventToPage( e, 'X' ) - start.left;
-		var snap = this.c.snapX;
-		var left;
-		var top = topDiff + start.offsetTop;
-
-		if ( snap === true ) {
-			left = start.offsetLeft;
-		}
-		else if ( typeof snap === 'number' ) {
-			left = start.offsetLeft + snap;
-		}
-		else {
-			left = leftDiff + start.offsetLeft;
-		}
-
-		if(top < 0) {
-			top = 0
-		}
-		else if(top + this.s.domCloneOuterHeight > this.s.documentOuterHeight) {
-			top = this.s.documentOuterHeight - this.s.domCloneOuterHeight;
-		}
-
-		this.dom.clone.css( {
-			top: top,
-			left: left
-		} );
-	},
-
-
-	/**
-	 * Emit an event on the DataTable for listeners
-	 *
-	 * @param  {string} name Event name
-	 * @param  {array} args Event arguments
-	 * @private
-	 */
-	_emitEvent: function ( name, args )
-	{
-		this.s.dt.iterator( 'table', function ( ctx, i ) {
-			$(ctx.nTable).triggerHandler( name+'.dt', args );
-		} );
-	},
-
-
-	/**
-	 * Get pageX/Y position from an event, regardless of if it is a mouse or
-	 * touch event.
-	 *
-	 * @param  {object} e Event
-	 * @param  {string} pos X or Y (must be a capital)
-	 * @private
-	 */
-	_eventToPage: function ( e, pos )
-	{
-		if ( e.type.indexOf( 'touch' ) !== -1 ) {
-			return e.originalEvent.touches[0][ 'page'+pos ];
-		}
-
-		return e[ 'page'+pos ];
-	},
-
-
-	/**
-	 * Mouse down event handler. Read initial positions and add event handlers
-	 * for the move.
-	 *
-	 * @param  {object} e      Mouse event
-	 * @param  {jQuery} target TR element that is to be moved
-	 * @private
-	 */
-	_mouseDown: function ( e, target )
-	{
+		var group, last;
+		var data = [];
 		var that = this;
-		var dt = this.s.dt;
-		var start = this.s.start;
 
-		var offset = target.offset();
-		start.top = this._eventToPage( e, 'Y' );
-		start.left = this._eventToPage( e, 'X' );
-		start.offsetTop = offset.top;
-		start.offsetLeft = offset.left;
-		start.nodes = $.unique( dt.rows( { page: 'current' } ).nodes().toArray() );
+		for ( var i=0, ien=rows.length ; i<ien ; i++ ) {
+			var rowIndex = rows[i];
+			var rowData = dt.row( rowIndex ).data();
+			var group = fn( rowData );
 
-		this._cachePositions();
-		this._clone( target );
-		this._clonePosition( e );
-
-		this.dom.target = target;
-		target.addClass( 'dt-rowReorder-moving' );
-
-		$( document )
-			.on( 'mouseup.rowReorder touchend.rowReorder', function (e) {
-				that._mouseUp(e);
-			} )
-			.on( 'mousemove.rowReorder touchmove.rowReorder', function (e) {
-				that._mouseMove(e);
-			} );
-
-		// Check if window is x-scrolling - if not, disable it for the duration
-		// of the drag
-		if ( $(window).width() === $(document).width() ) {
-			$(document.body).addClass( 'dt-rowReorder-noOverflow' );
-		}
-
-		// Cache scrolling information so mouse move doesn't need to read.
-		// This assumes that the window and DT scroller will not change size
-		// during an row drag, which I think is a fair assumption
-		var scrollWrapper = this.dom.dtScroll;
-		this.s.scroll = {
-			windowHeight: $(window).height(),
-			windowWidth:  $(window).width(),
-			dtTop:        scrollWrapper.length ? scrollWrapper.offset().top : null,
-			dtLeft:       scrollWrapper.length ? scrollWrapper.offset().left : null,
-			dtHeight:     scrollWrapper.length ? scrollWrapper.outerHeight() : null,
-			dtWidth:      scrollWrapper.length ? scrollWrapper.outerWidth() : null
-		};
-	},
-
-
-	/**
-	 * Mouse move event handler - move the cloned row and shuffle the table's
-	 * rows if required.
-	 *
-	 * @param  {object} e Mouse event
-	 * @private
-	 */
-	_mouseMove: function ( e )
-	{
-		this._clonePosition( e );
-
-		// Transform the mouse position into a position in the table's body
-		var bodyY = this._eventToPage( e, 'Y' ) - this.s.bodyTop;
-		var middles = this.s.middles;
-		var insertPoint = null;
-		var dt = this.s.dt;
-		var body = dt.table().body();
-
-		// Determine where the row should be inserted based on the mouse
-		// position
-		for ( var i=0, ien=middles.length ; i<ien ; i++ ) {
-			if ( bodyY < middles[i] ) {
-				insertPoint = i;
-				break;
+			if ( group === null || group === undefined ) {
+				group = that.c.emptyDataGroup;
 			}
-		}
-
-		if ( insertPoint === null ) {
-			insertPoint = middles.length;
-		}
-
-		// Perform the DOM shuffle if it has changed from last time
-		if ( this.s.lastInsert === null || this.s.lastInsert !== insertPoint ) {
-			if ( insertPoint === 0 ) {
-				this.dom.target.prependTo( body );
-			}
-			else {
-				var nodes = $.unique( dt.rows( { page: 'current' } ).nodes().toArray() );
-
-				if ( insertPoint > this.s.lastInsert ) {
-					this.dom.target.insertAfter( nodes[ insertPoint-1 ] );
-				}
-				else {
-					this.dom.target.insertBefore( nodes[ insertPoint ] );
-				}
-			}
-
-			this._cachePositions();
-
-			this.s.lastInsert = insertPoint;
-		}
-
-		this._shiftScroll( e );
-	},
-
-
-	/**
-	 * Mouse up event handler - release the event handlers and perform the
-	 * table updates
-	 *
-	 * @param  {object} e Mouse event
-	 * @private
-	 */
-	_mouseUp: function ( e )
-	{
-		var that = this;
-		var dt = this.s.dt;
-		var i, ien;
-		var dataSrc = this.c.dataSrc;
-
-		this.dom.clone.remove();
-		this.dom.clone = null;
-
-		this.dom.target.removeClass( 'dt-rowReorder-moving' );
-		//this.dom.target = null;
-
-		$(document).off( '.rowReorder' );
-		$(document.body).removeClass( 'dt-rowReorder-noOverflow' );
-
-		clearInterval( this.s.scrollInterval );
-		this.s.scrollInterval = null;
-
-		// Calculate the difference
-		var startNodes = this.s.start.nodes;
-		var endNodes = $.unique( dt.rows( { page: 'current' } ).nodes().toArray() );
-		var idDiff = {};
-		var fullDiff = [];
-		var diffNodes = [];
-		var getDataFn = this.s.getDataFn;
-		var setDataFn = this.s.setDataFn;
-
-		for ( i=0, ien=startNodes.length ; i<ien ; i++ ) {
-			if ( startNodes[i] !== endNodes[i] ) {
-				var id = dt.row( endNodes[i] ).id();
-				var endRowData = dt.row( endNodes[i] ).data();
-				var startRowData = dt.row( startNodes[i] ).data();
-
-				if ( id ) {
-					idDiff[ id ] = getDataFn( startRowData );
-				}
-
-				fullDiff.push( {
-					node: endNodes[i],
-					oldData: getDataFn( endRowData ),
-					newData: getDataFn( startRowData ),
-					newPosition: i,
-					oldPosition: $.inArray( endNodes[i], startNodes )
+			
+			if ( last === undefined || group !== last ) {
+				data.push( {
+					dataPoint: group,
+					rows: []
 				} );
 
-				diffNodes.push( endNodes[i] );
+				last = group;
+			}
+
+			data[ data.length-1 ].rows.push( rowIndex );
+		}
+
+		if ( fns[ level+1 ] !== undefined ) {
+			for ( var i=0, ien=data.length ; i<ien ; i++ ) {
+				data[i].children = this._group( level+1, data[i].rows );
 			}
 		}
-		
-		// Create event args
-		var eventArgs = [ fullDiff, {
-			dataSrc:       dataSrc,
-			nodes:         diffNodes,
-			values:        idDiff,
-			triggerRow:    dt.row( this.dom.target ),
-			originalEvent: e
-		} ];
-		
-		// Emit event
-		this._emitEvent( 'row-reorder', eventArgs );
 
-		var update = function () {
-			if ( that.c.update ) {
-				for ( i=0, ien=fullDiff.length ; i<ien ; i++ ) {
-					var row = dt.row( fullDiff[i].node );
-					var rowData = row.data();
+		return data;
+	},
 
-					setDataFn( rowData, fullDiff[i].newData );
+	/**
+	 * Row group display - insert the rows into the document
+	 * @param {number} level Nesting level
+	 * @param {object[]} groups Takes the nested array from `_group`
+	 * @private
+	 */
+	_groupDisplay: function ( level, groups )
+	{
+		var dt = this.s.dt;
+		var display;
+	
+		for ( var i=0, ien=groups.length ; i<ien ; i++ ) {
+			var group = groups[i];
+			var groupName = group.dataPoint;
+			var row;
+			var rows = group.rows;
 
-					// Invalidate the cell that has the same data source as the dataSrc
-					dt.columns().every( function () {
-						if ( this.dataSrc() === dataSrc ) {
-							dt.cell( fullDiff[i].node, this.index() ).invalidate( 'data' );
-						}
-					} );
+			if ( this.c.startRender ) {
+				display = this.c.startRender.call( this, dt.rows(rows), groupName, level );
+				row = this._rowWrap( display, this.c.startClassName, level );
+
+				if ( row ) {
+					row.insertBefore( dt.row( rows[0] ).node() );
 				}
-
-				// Trigger row reordered event
-				that._emitEvent( 'row-reordered', eventArgs );
-
-				dt.draw( false );
 			}
-		};
 
-		// Editor interface
-		if ( this.c.editor ) {
-			// Disable user interaction while Editor is submitting
-			this.c.enable = false;
+			if ( this.c.endRender ) {
+				display = this.c.endRender.call( this, dt.rows(rows), groupName, level );
+				row = this._rowWrap( display, this.c.endClassName, level );
 
-			this.c.editor
-				.edit(
-					diffNodes,
-					false,
-					$.extend( {submit: 'changed'}, this.c.formOptions )
-				)
-				.multiSet( dataSrc, idDiff )
-				.one( 'preSubmitCancelled.rowReorder', function () {
-					that.c.enable = true;
-					that.c.editor.off( '.rowReorder' );
-					dt.draw( false );
-				} )
-				.one( 'submitUnsuccessful.rowReorder', function () {
-					dt.draw( false );
-				} )
-				.one( 'submitSuccess.rowReorder', function () {
-					update();
-				} )
-				.one( 'submitComplete', function () {
-					that.c.enable = true;
-					that.c.editor.off( '.rowReorder' );
-				} )
-				.submit();
-		}
-		else {
-			update();
+				if ( row ) {
+					row.insertAfter( dt.row( rows[ rows.length-1 ] ).node() );
+				}
+			}
+
+			if ( group.children ) {
+				this._groupDisplay( level+1, group.children );
+			}
 		}
 	},
 
-
 	/**
-	 * Move the window and DataTables scrolling during a drag to scroll new
-	 * content into view.
-	 *
-	 * This matches the `_shiftScroll` method used in AutoFill, but only
-	 * horizontal scrolling is considered here.
-	 *
-	 * @param  {object} e Mouse move event object
+	 * Take a rendered value from an end user and make it suitable for display
+	 * as a row, by wrapping it in a row, or detecting that it is a row.
+	 * @param {node|jQuery|string} display Display value
+	 * @param {string} className Class to add to the row
+	 * @param {array} group
+	 * @param {number} group level
 	 * @private
 	 */
-	_shiftScroll: function ( e )
+	_rowWrap: function ( display, className, level )
 	{
-		var that = this;
-		var dt = this.s.dt;
-		var scroll = this.s.scroll;
-		var runInterval = false;
-		var scrollSpeed = 5;
-		var buffer = 65;
-		var
-			windowY = e.pageY - document.body.scrollTop,
-			windowVert,
-			dtVert;
-
-		// Window calculations - based on the mouse position in the window,
-		// regardless of scrolling
-		if ( windowY < buffer ) {
-			windowVert = scrollSpeed * -1;
-		}
-		else if ( windowY > scroll.windowHeight - buffer ) {
-			windowVert = scrollSpeed;
+		var row;
+		
+		if ( display === null || display === '' ) {
+			display = this.c.emptyDataGroup;
 		}
 
-		// DataTables scrolling calculations - based on the table's position in
-		// the document and the mouse position on the page
-		if ( scroll.dtTop !== null && e.pageY < scroll.dtTop + buffer ) {
-			dtVert = scrollSpeed * -1;
+		if ( display === undefined || display === null ) {
+			return null;
 		}
-		else if ( scroll.dtTop !== null && e.pageY > scroll.dtTop + scroll.dtHeight - buffer ) {
-			dtVert = scrollSpeed;
+		
+		if ( typeof display === 'object' && display.nodeName && display.nodeName.toLowerCase() === 'tr') {
+			row = $(display);
 		}
-
-		// This is where it gets interesting. We want to continue scrolling
-		// without requiring a mouse move, so we need an interval to be
-		// triggered. The interval should continue until it is no longer needed,
-		// but it must also use the latest scroll commands (for example consider
-		// that the mouse might move from scrolling up to scrolling left, all
-		// with the same interval running. We use the `scroll` object to "pass"
-		// this information to the interval. Can't use local variables as they
-		// wouldn't be the ones that are used by an already existing interval!
-		if ( windowVert || dtVert ) {
-			scroll.windowVert = windowVert;
-			scroll.dtVert = dtVert;
-			runInterval = true;
+		else if (display instanceof $ && display.length && display[0].nodeName.toLowerCase() === 'tr') {
+			row = display;
 		}
-		else if ( this.s.scrollInterval ) {
-			// Don't need to scroll - remove any existing timer
-			clearInterval( this.s.scrollInterval );
-			this.s.scrollInterval = null;
+		else {
+			row = $('<tr/>')
+				.append(
+					$('<td/>')
+						.attr( 'colspan', this._colspan() )
+						.append( display  )
+				);
 		}
 
-		// If we need to run the interval to scroll and there is no existing
-		// interval (if there is an existing one, it will continue to run)
-		if ( ! this.s.scrollInterval && runInterval ) {
-			this.s.scrollInterval = setInterval( function () {
-				// Don't need to worry about setting scroll <0 or beyond the
-				// scroll bound as the browser will just reject that.
-				if ( scroll.windowVert ) {
-					document.body.scrollTop += scroll.windowVert;
-				}
-
-				// DataTables scrolling
-				if ( scroll.dtVert ) {
-					var scroller = that.dom.dtScroll[0];
-
-					if ( scroll.dtVert ) {
-						scroller.scrollTop += scroll.dtVert;
-					}
-				}
-			}, 20 );
-		}
+		return row
+			.addClass( this.c.className )
+			.addClass( className )
+			.addClass( 'dtrg-level-'+level );
 	}
 } );
 
 
-
 /**
- * RowReorder default settings for initialisation
+ * RowGroup default settings for initialisation
  *
  * @namespace
- * @name RowReorder.defaults
+ * @name RowGroup.defaults
  * @static
  */
-RowReorder.defaults = {
+RowGroup.defaults = {
 	/**
-	 * Data point in the host row's data source object for where to get and set
-	 * the data to reorder. This will normally also be the sorting column.
-	 *
-	 * @type {Number}
+	 * Class to apply to grouping rows - applied to both the start and
+	 * end grouping rows.
+	 * @type string
+	 */
+	className: 'dtrg-group',
+
+	/**
+	 * Data property from which to read the grouping information
+	 * @type string|integer|array
 	 */
 	dataSrc: 0,
 
 	/**
-	 * Editor instance that will be used to perform the update
-	 *
-	 * @type {DataTable.Editor}
+	 * Text to show if no data is found for a group
+	 * @type string
 	 */
-	editor: null,
+	emptyDataGroup: 'No group',
 
 	/**
-	 * Enable / disable RowReorder's user interaction
-	 * @type {Boolean}
+	 * Initial enablement state
+	 * @boolean
 	 */
 	enable: true,
 
 	/**
-	 * Form options to pass to Editor when submitting a change in the row order.
-	 * See the Editor `from-options` object for details of the options
-	 * available.
-	 * @type {Object}
+	 * Class name to give to the end grouping row
+	 * @type string
 	 */
-	formOptions: {},
+	endClassName: 'dtrg-end',
 
 	/**
-	 * Drag handle selector. This defines the element that when dragged will
-	 * reorder a row.
-	 *
-	 * @type {String}
+	 * End grouping label function
+	 * @function
 	 */
-	selector: 'td:first-child',
+	endRender: null,
 
 	/**
-	 * Optionally lock the dragged row's x-position. This can be `true` to
-	 * fix the position match the host table's, `false` to allow free movement
-	 * of the row, or a number to define an offset from the host table.
-	 *
-	 * @type {Boolean|number}
+	 * Class name to give to the start grouping row
+	 * @type string
 	 */
-	snapX: false,
+	startClassName: 'dtrg-start',
 
 	/**
-	 * Update the table's data on drop
-	 *
-	 * @type {Boolean}
+	 * Start grouping label function
+	 * @function
 	 */
-	update: true,
-
-	/**
-	 * Selector for children of the drag handle selector that mouseDown events
-	 * will be passed through to and drag will not activate
-	 *
-	 * @type {String}
-	 */
-	excludedChildren: 'a'
+	startRender: function ( rows, group ) {
+		return group;
+	}
 };
 
 
-/*
- * API
- */
-var Api = $.fn.dataTable.Api;
+RowGroup.version = "1.1.1";
 
-// Doesn't do anything - work around for a bug in DT... Not documented
-Api.register( 'rowReorder()', function () {
+
+$.fn.dataTable.RowGroup = RowGroup;
+$.fn.DataTable.RowGroup = RowGroup;
+
+
+DataTable.Api.register( 'rowGroup()', function () {
 	return this;
 } );
 
-Api.register( 'rowReorder.enable()', function ( toggle ) {
-	if ( toggle === undefined ) {
-		toggle = true;
+DataTable.Api.register( 'rowGroup().disable()', function () {
+	return this.iterator( 'table', function (ctx) {
+		if ( ctx.rowGroup ) {
+			ctx.rowGroup.enable( false );
+		}
+	} );
+} );
+
+DataTable.Api.register( 'rowGroup().enable()', function ( opts ) {
+	return this.iterator( 'table', function (ctx) {
+		if ( ctx.rowGroup ) {
+			ctx.rowGroup.enable( opts === undefined ? true : opts );
+		}
+	} );
+} );
+
+DataTable.Api.register( 'rowGroup().dataSrc()', function ( val ) {
+	if ( val === undefined ) {
+		return this.context[0].rowGroup.dataSrc();
 	}
 
-	return this.iterator( 'table', function ( ctx ) {
-		if ( ctx.rowreorder ) {
-			ctx.rowreorder.c.enable = toggle;
+	return this.iterator( 'table', function (ctx) {
+		if ( ctx.rowGroup ) {
+			ctx.rowGroup.dataSrc( val );
 		}
 	} );
 } );
 
-Api.register( 'rowReorder.disable()', function () {
-	return this.iterator( 'table', function ( ctx ) {
-		if ( ctx.rowreorder ) {
-			ctx.rowreorder.c.enable = false;
-		}
-	} );
-} );
-
-
-/**
- * Version information
- *
- * @name RowReorder.version
- * @static
- */
-RowReorder.version = '1.2.6';
-
-
-$.fn.dataTable.RowReorder = RowReorder;
-$.fn.DataTable.RowReorder = RowReorder;
 
 // Attach a listener to the document which listens for DataTables initialisation
 // events so we can automatically initialise
-$(document).on( 'init.dt.dtr', function (e, settings, json) {
+$(document).on( 'preInit.dt.dtrg', function (e, settings, json) {
 	if ( e.namespace !== 'dt' ) {
 		return;
 	}
 
-	var init = settings.oInit.rowReorder;
-	var defaults = DataTable.defaults.rowReorder;
+	var init = settings.oInit.rowGroup;
+	var defaults = DataTable.defaults.rowGroup;
 
 	if ( init || defaults ) {
-		var opts = $.extend( {}, init, defaults );
+		var opts = $.extend( {}, defaults, init );
 
 		if ( init !== false ) {
-			new RowReorder( settings, opts  );
+			new RowGroup( settings, opts  );
 		}
 	}
 } );
 
 
-return RowReorder;
+return RowGroup;
+
 }));
 
 

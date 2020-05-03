@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Patient;
 use Illuminate\Http\Request;
 use Yajra\Datatables\Datatables;
+use Carbon\Carbon;
 
 class PatientController extends Controller
 {
@@ -57,7 +58,7 @@ class PatientController extends Controller
         $validatedData = $request->validate([
             'first_name' => ['required', 'max:255'],
             'last_name' => ['required', 'max:255'],
-            'email' => ['required', 'email'],
+            'notification' => ['required'],
             'status_id' => ['required']
         ]);
 
@@ -67,8 +68,14 @@ class PatientController extends Controller
 
         $patient->first_name = request('first_name');
         $patient->last_name = request('last_name');
-        $patient->email = request('email');
-        $patient->phone_number = request('phone_number');
+        $patient->email_1 = request('email_1');
+        $patient->email_2 = request('email_2');
+        $patient->email_3 = request('email_3');
+        $patient->phone_number_1 = request('phone_number_1');
+        $patient->phone_number_2 = request('phone_number_2');
+        $patient->phone_number_3 = request('phone_number_3');
+
+        $patient->date_of_service = Carbon::createFromFormat('m/d/Y', request('date_of_service'))->format('Y-m-d');
 
         $status->patient()->save($patient);
 
@@ -104,6 +111,8 @@ class PatientController extends Controller
         $departments = \App\Department::pluck('name', 'id')->toArray();
         $statuses = \App\Status::where('department_id', $patient->status->department->id)->pluck('name', 'id')->toArray();
         $patient = Patient::with('status.department.site')->find($patient->id);
+        $patient->date_of_service = Carbon::createFromFormat('Y-m-d', $patient->date_of_service)->format('m/d/Y');
+
         return view('patients-edit', ['patient' => $patient, 'sites' => $sites, 'departments' => $departments, 'statuses' => $statuses]);
 
     }
@@ -120,8 +129,6 @@ class PatientController extends Controller
         $validatedData = $request->validate([
             'first_name' => ['required', 'max:255'],
             'last_name' => ['required', 'max:255'],
-            'email' => ['required', 'email'],
-            'phone_number' => ['size:10'],
             'status_id' => ['required']
         ]);
 
@@ -129,12 +136,12 @@ class PatientController extends Controller
 
         $patient->status()->associate($status);
 
+        $patient->date_of_service = Carbon::createFromFormat('m/d/Y', request('date_of_service'))->format('Y-m-d');
+
          //Save Patient Data
         $patient->update([
             'first_name' => request('first_name'),
             'last_name' => request('last_name'),
-            'email' => request('email'),
-            'phone_number' => request('phone_number')
         ]);
 
         $message = [

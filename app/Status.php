@@ -13,7 +13,8 @@ class Status extends Model
      * @var array
      */
     protected $fillable = [
-        'name'
+        'name',
+        'list_order'
     ];
 
         public function department()

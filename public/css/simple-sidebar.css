@@ -78,3 +78,7 @@ table.dataTable.dtr-inline.collapsed > tbody > tr.parent > th:first-child:before
     width: 50%;
     float: right;
 }
+
+.hide{
+  display: none;
+}

@@ -26,7 +26,7 @@ class StatusController extends Controller
      */
     public function getData()
     {
-        $statuses = Status::with(['department.site'])->get();
+        $statuses = Status::with(['department.site'])->orderBy('list_order', 'asc')->get();
         return Datatables::of($statuses)->addColumn('action', function ($statuses) {
                 return '<a href="'.action('StatusController@edit', $statuses->id).'"><i class="fad fa-pencil-alt"></i></a>';
             })->make(true);
@@ -39,7 +39,7 @@ class StatusController extends Controller
      */
     public function getStatuses(Request $request)
     {
-        $statuses = Status::where('department_id', $request->department_id)->get();
+        $statuses = Status::where('department_id', $request->department_id)->orderBy('list_order', 'asc')->get();
         return response()->json($statuses);
     }    
 
@@ -63,18 +63,39 @@ class StatusController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        //        
         $validatedData = $request->validate([
-            'name' => ['required', 'unique:statuses,name,null,id,department_id,'.request('department_id'), 'max:255'],
+            'site_id' => ['required'],
+            'department_id' => ['required'],
+            'new_status' => ['required'],
         ]);
+        
+        $new_statuses = request('new_status');
+        $old_statuses = request('status');
 
-        $department = \App\Department::find(request('department_id'));
+        foreach ($new_statuses as $key => $new_status) {
+            $department = \App\Department::find(request('department_id'));
 
-        $status = new Status;
+            $status = new Status;
 
-        $status->name = request('name');
+            $status->name = $new_status['name'];
+            $status->list_order = $new_status['order'];
 
-        $department->status()->save($status);
+            $department->status()->save($status);
+
+        }
+
+        if(isset($old_statuses)){
+
+            foreach ($old_statuses as $key => $old_status) {
+                
+                $status = Status::find($old_status['id']);
+                
+                $status->update([
+                'list_order' => $old_status['order']
+                ]);
+            }
+        }
 
         $message = [
                 'text' => "Success: Status ".$status->name." has been saved.",
@@ -119,10 +140,6 @@ class StatusController extends Controller
      */
     public function update(Request $request, Status $status)
     {
-        $validatedData = $request->validate([
-            'name' => ['required', 'unique:statuses,name,null,id,department_id,'.request('department_id'), 'max:255']
-        ]);
-
         $department = \App\Department::find(request('department_id'));
 
         $status->department()->associate($department);
