@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', 'Create Patients')
+@section('title', 'Patient Sign Up')
 
 @section('content')
 <div class="row justify-content-sm-center">

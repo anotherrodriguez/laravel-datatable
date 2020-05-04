@@ -40,4 +40,6 @@
 
     addButtonLink = '<?php echo action('SiteController@create'); ?>';
 
+    $('.bottom').append('<a href="'+ addButtonLink +'"><button type="button" class="btn btn-primary">add</button></a>');
+
 @endpush

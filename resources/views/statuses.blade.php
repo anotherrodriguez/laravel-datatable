@@ -39,4 +39,6 @@
 
     addButtonLink = '<?php echo action('StatusController@create'); ?>';
 
+    $('.bottom').append('<a href="'+ addButtonLink +'"><button type="button" class="btn btn-primary">add</button></a>');
+
 @endpush

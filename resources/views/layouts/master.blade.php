@@ -36,13 +36,21 @@
     <div class="bg-light border-right" id="sidebar-wrapper">
       <div class="sidebar-heading">Menu </div>
       <div class="list-group list-group-flush">
-        <a href="#" class="list-group-item list-group-item-action bg-light"><i class="fad fa-home-alt"></i> Home</a>
+        <a href="{{ action('HomeController@index') }}" class="list-group-item list-group-item-action bg-light"><i class="fad fa-home-alt"></i> Home</a>
+@guest
+        <a href="{{ action('PatientController@create')}}" class="list-group-item list-group-item-action bg-light"><i class="fad fa-user-plus"></i> Patient Sign up</a>
+@else
         <a href="{{ action('SiteController@index')}}" class="list-group-item list-group-item-action bg-light"><i class="fad fa-edit"></i> Manage Sites</a>
+
         <a href="{{ action('DepartmentController@index')}}" class="list-group-item list-group-item-action bg-light"><i class="fad fa-edit"></i> Manage Departments</a>
+
         <a href="{{ action('StatusController@index')}}" class="list-group-item list-group-item-action bg-light"><i class="fad fa-edit"></i> Manage Statuses</a>
+
         <a href="{{ action('PatientController@index')}}" class="list-group-item list-group-item-action bg-light"><i class="fad fa-edit"></i> Manage Patients</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light">Profile</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light">Status</a>
+
+        <a href="{{ route('logout') }}" class="list-group-item list-group-item-action bg-light" id="logout">Logout</a>
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;"> @csrf </form>
+@endguest
       </div>
     </div>
     <!-- /#sidebar-wrapper -->
@@ -93,6 +101,11 @@
   <!-- Menu Toggle Script -->
   <script>
   $(document).ready(function() {
+    $('#logout').click(function(e){
+      e.preventDefault();
+      $('#logout-form').submit();
+    });
+
     $("#menu-toggle").click(function(e) {
       e.preventDefault();
       $("#wrapper").toggleClass(function(){
@@ -122,7 +135,6 @@
 
     @stack('jQueryScriptDatatable')
 
-    $('.bottom').append('<a href="'+ addButtonLink +'"><button type="button" class="btn btn-primary">add</button></a>');
 
 @endif
 
