@@ -24,6 +24,7 @@
     </div>
 
     <button type="submit" class="btn btn-primary float-right">Update</button>
+    {{ Form::hidden('id', $status->id) }}
 
     {{ Form::close() }}
 

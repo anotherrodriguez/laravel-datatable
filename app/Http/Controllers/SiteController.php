@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Site;
 use Illuminate\Http\Request;
 use Yajra\Datatables\Datatables;
+use App\Http\Requests\SiteStoreRequest;
+use App\Http\Requests\SiteUpdateRequest;
 
 class SiteController extends Controller
 {
@@ -107,16 +109,10 @@ class SiteController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(SiteStoreRequest $request)
     {
         //Save Site Data
-        $validatedData = $request->validate([
-            'name' => ['required', 'unique:sites', 'max:255'],
-            'address' => ['required'],
-            'city' => ['required'],
-            'state' => ['required'],
-            'zip_code' => ['required']
-        ]);
+        $validated = $request->validated();
 
         $site = new Site;
 
@@ -166,12 +162,10 @@ class SiteController extends Controller
      * @param  \App\Site  $site
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Site $site)
+    public function update(SiteUpdateRequest $request, Site $site)
     {
         //Save Site Data
-        $validatedData = $request->validate([
-            'name' => ['required', 'unique:sites', 'max:255'],
-        ]);
+        $validated = $request->validated();
 
         $site->update([
             'name'=>request('name'),

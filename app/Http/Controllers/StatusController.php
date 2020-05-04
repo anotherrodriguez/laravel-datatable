@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Status;
 use Illuminate\Http\Request;
 use Yajra\Datatables\Datatables;
+use App\Http\Requests\StatusStoreRequest;
+use App\Http\Requests\StatusUpdateRequest;
 
 class StatusController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('verified');
+        $this->middleware('verified', ['except' => ['getStatuses']]);
     }
     /**
      * Display a listing of the resource.
@@ -65,15 +67,9 @@ class StatusController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StatusStoreRequest $request)
     {
         //        
-        $validatedData = $request->validate([
-            'site_id' => ['required'],
-            'department_id' => ['required'],
-            'new_status' => ['required'],
-        ]);
-        
         $new_statuses = request('new_status');
         $old_statuses = request('status');
 
@@ -142,7 +138,7 @@ class StatusController extends Controller
      * @param  \App\Status  $status
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Status $status)
+    public function update(StatusUpdateRequest $request, Status $status)
     {
         $department = \App\Department::find(request('department_id'));
 

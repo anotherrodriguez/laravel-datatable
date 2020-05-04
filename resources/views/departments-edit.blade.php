@@ -13,7 +13,7 @@
       {{ Form::select('site_id', $sites, $department->site->id, ['class' => 'form-control']) }}
       {{ Form::label('inputDepartment', 'Department Name')}}
       {{ Form::text('name', $value = NULL,['class' => 'form-control']) }}
-      <small id="DepartmentHelp" class="form-text text-muted">Enter Department name.</small>
+      {{ Form::hidden('id', $department->id) }}
     </div>
 
     <button type="submit" class="btn btn-primary float-right">Update</button>

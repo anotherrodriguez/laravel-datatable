@@ -6,9 +6,15 @@ use App\Patient;
 use Illuminate\Http\Request;
 use Yajra\Datatables\Datatables;
 use Carbon\Carbon;
+use App\Http\Requests\PatientStoreRequest;
+use App\Http\Requests\PatientUpdateRequest;
 
 class PatientController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('verified', ['except' => ['create', 'store', 'show']]);
+    }
     /**
      * Display a listing of the resource.
      *
@@ -52,16 +58,9 @@ class PatientController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(PatientStoreRequest $request)
     {
         //
-        $validatedData = $request->validate([
-            'first_name' => ['required', 'max:255'],
-            'last_name' => ['required', 'max:255'],
-            'notification' => ['required'],
-            'status_id' => ['required']
-        ]);
-
         $status = \App\Status::find(request('status_id'));
 
         $patient = new Patient;
@@ -125,14 +124,8 @@ class PatientController extends Controller
      * @param  \App\Patient  $patient
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Patient $patient)
+    public function update(PatientUpdateRequest $request, Patient $patient)
     {
-        $validatedData = $request->validate([
-            'first_name' => ['required', 'max:255'],
-            'last_name' => ['required', 'max:255'],
-            'status_id' => ['required']
-        ]);
-
         $status = \App\Status::find(request('status_id'));
 
         $patient->status()->associate($status);

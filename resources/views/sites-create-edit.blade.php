@@ -26,6 +26,7 @@
     </div>
 
 @if (isset($edit))
+    {{ Form::hidden('id', $site->id) }}
     <button type="submit" class="btn btn-primary float-right">Update</button>
 @else
     <button type="submit" class="btn btn-primary">Submit</button>

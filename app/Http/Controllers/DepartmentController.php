@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Department;
 use Illuminate\Http\Request;
 use Yajra\Datatables\Datatables;
+use App\Http\Requests\DepartmentStoreRequest;
+use App\Http\Requests\DepartmentUpdateRequest;
 
 class DepartmentController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('verified');
+        $this->middleware('verified', ['except' => ['getDepartments']]);
     }
     /**
      * Display a listing of the resource.
@@ -65,12 +67,10 @@ class DepartmentController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(DepartmentStoreRequest $request)
     {
         //Save Department Data
-        $validatedData = $request->validate([
-            'name' => ['required', 'unique:departments,name,null,id,site_id,'.request('site_id'), 'max:255'],
-        ]);
+        $validated = $request->validated();
 
         $site = \App\Site::find(request('site_id'));
 
@@ -121,12 +121,10 @@ class DepartmentController extends Controller
      * @param  \App\Department  $department
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Department $department)
+    public function update(DepartmentUpdateRequest $request, Department $department)
     {
         //Save Department Data
-        $validatedData = $request->validate([
-            'name' => ['required', 'unique:departments,name,null,id,site_id,'.request('site_id'), 'max:255'],
-        ]);
+        $validated = $request->validated();
 
         $site = \App\Site::find(request('site_id'));
 
