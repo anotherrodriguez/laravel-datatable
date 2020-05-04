@@ -83,7 +83,7 @@ class PatientController extends Controller
                 'type' => "success"
             ];
 
-        return redirect()->action('PatientController@show')->with('message', $message);
+        return redirect()->action('PatientController@show', $patient)->with('message', $message);
     }
 
     /**
