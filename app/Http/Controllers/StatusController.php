@@ -8,6 +8,10 @@ use Yajra\Datatables\Datatables;
 
 class StatusController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('verified');
+    }
     /**
      * Display a listing of the resource.
      *
