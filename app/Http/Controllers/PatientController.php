@@ -35,7 +35,7 @@ class PatientController extends Controller
     {
         $patients = Patient::with(['status.department.site'])->get();
         return Datatables::of($patients)->addColumn('action', function ($patients) {
-                return '<a href="'.action('PatientController@edit', $patients->id).'"><i class="fad fa-pencil-alt"></i></a>';
+                return action('PatientController@edit', $patients->id);
             })->make(true);
     }
 

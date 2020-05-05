@@ -34,7 +34,7 @@ class DepartmentController extends Controller
     {
         $departments = Department::with('site')->get();
         return Datatables::of($departments)->addColumn('action', function ($departments) {
-                return '<a href="'.action('DepartmentController@edit', $departments->id).'"><i class="fad fa-pencil-alt"></i></a>';
+                return action('DepartmentController@edit', $departments->id);
             })->make(true);
     }
 

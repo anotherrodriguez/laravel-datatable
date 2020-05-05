@@ -7,7 +7,6 @@
           <table id="patient-table" class="table table-striped display nowrap" style="width:100%">
             <thead>
               <tr>
-                <th></th>
                 <th>Name</th>
                 <th>Address</th>
                 <th>City</th>
@@ -24,10 +23,9 @@
 @section('datatable', true)
 
 @push('datatableOptions')
-          order: [[ 1, 'asc' ]],
+          order: [[ 0, 'asc' ]],
           ajax: '<?php echo route('site.getData'); ?>',
           columns: [
-              { data: 'action', name: 'action', orderable: false, searchable: false, width: '30px'},
               { data: 'name'},
               { data: 'address'},
               { data: 'city'},

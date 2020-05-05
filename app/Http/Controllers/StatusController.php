@@ -34,7 +34,7 @@ class StatusController extends Controller
     {
         $statuses = Status::with(['department.site'])->orderBy('list_order', 'asc')->get();
         return Datatables::of($statuses)->addColumn('action', function ($statuses) {
-                return '<a href="'.action('StatusController@edit', $statuses->id).'"><i class="fad fa-pencil-alt"></i></a>';
+                return action('StatusController@edit', $statuses->id);
             })->make(true);
     }
 

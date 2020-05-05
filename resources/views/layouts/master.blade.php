@@ -121,11 +121,9 @@
 
 @hasSection('datatable')
 
-    $('#patient-table').DataTable({
+    var table = $('#patient-table').DataTable({
         dom: 'frt<"bottom"p>',
         responsive: true,
-        processing: true,
-        serverSide: true,
 
         @stack('datatableOptions')
 
@@ -133,8 +131,12 @@
 
     var addButtonLink = '#';
 
-    @stack('jQueryScriptDatatable')
+    $('tbody').on('click', 'tr', function(){
+    var data = table.row( this ).data();
+    window.location.href = data.action;
+    });
 
+    @stack('jQueryScriptDatatable')
 
 @endif
 

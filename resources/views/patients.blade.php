@@ -7,7 +7,6 @@
           <table id="patient-table" class="table table-striped display nowrap" style="width:100%">
             <thead>
               <tr>
-                <th></th>
                 <th>Patient</th>
                 <th>Status</th>
                 <th>Site</th>
@@ -24,23 +23,27 @@
 @section('datatable', true)
 
 @push('datatableOptions')
-          order: [[ 1, 'asc' ]],
+          order: [[ 0, 'asc' ]],
           ajax: '<?php echo route('patient.getData'); ?>',
           columns: [
-              { data: 'action', name: 'action', orderable: false, searchable: false, width: '30px'},
               { data: 'first_name', 
               render: function ( data, type, row, meta ) {
-              return data.substr(0,1)+'. '+row.last_name;
+
+                var first_name = data;
+                var last_name = row.last_name;
+                var display_name = first_name.substr(0,1)+'. '+last_name;
+
+                if(type==='display'){
+                  data = display_name;
+                }
+                if(type==='filter' || type==='type'){
+                  data = first_name+' '+last_name+' '+display_name;
+                }
+                return data;
               }},
               { data: 'status.name'},
               { data: 'status.department.site.name'},
               { data: 'date_of_service'},
               { data: 'status.department.name', name: 'name' }
           ]
-@endpush
-
-@push('jQueryScriptDatatable')
-
-    addButtonLink = '<?php echo action('PatientController@create'); ?>';
-
 @endpush

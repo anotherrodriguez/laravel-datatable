@@ -34,7 +34,7 @@ class SiteController extends Controller
     {
         $sites = Site::select(['id', 'name', 'address', 'city', 'state', 'zip_code'])->get();
         return Datatables::of($sites)->addColumn('action', function ($sites) {
-                return '<a href="'.action('SiteController@edit', $sites->id).'"><i class="fad fa-pencil-alt"></i></a>';
+                return action('SiteController@edit', $sites->id);
             })->make(true);
     }
 

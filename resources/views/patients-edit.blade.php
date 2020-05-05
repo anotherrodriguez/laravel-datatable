@@ -59,12 +59,6 @@
 
     {{ Form::close() }}
 
-    {{ Form::model($patient,['action'=>['PatientController@destroy',$patient], 'method' => 'delete']) }}
-
-    <button class="btn btn-danger float-left"><i class="fad fa-trash-alt"></i> Cancel</button>
-
-    {{ Form::close() }}
-
 @if ($errors->any())
     <div class="alert alert-danger">
         <ul>
