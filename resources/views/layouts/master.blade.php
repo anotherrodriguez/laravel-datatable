@@ -131,9 +131,18 @@
 
     var addButtonLink = '#';
 
-    $('tbody').on('click', 'tr', function(){
-    var data = table.row( this ).data();
-    window.location.href = data.action;
+    $('tbody').on('click', 'td', function(e){
+      var colIndex = table.cell( this ).index().columnVisible;
+      var data = table.row(this).data();
+      if($('#patient-table').hasClass('collapsed')){
+        if(colIndex>0){
+        window.location.href = data.action;
+        }
+      }
+      else{
+        window.location.href = data.action;
+      }
+      
     });
 
     @stack('jQueryScriptDatatable')
