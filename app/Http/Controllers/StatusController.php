@@ -22,7 +22,7 @@ class StatusController extends Controller
     public function index()
     {
         //List all available Sites
-        return view('statuses');
+        return view('status/list');
     }
 
     /**
@@ -58,7 +58,7 @@ class StatusController extends Controller
     {
         //Show form to add new Sites
         $sites = \App\Site::pluck('name', 'id')->toArray();
-        return view('statuses-create', ['sites' => $sites]);
+        return view('status/create', ['sites' => $sites]);
     }
 
     /**
@@ -127,7 +127,7 @@ class StatusController extends Controller
         //
         $sites = \App\Site::pluck('name', 'id')->toArray();
         $departments = \App\Department::where('site_id', $status->department->site->id)->pluck('name', 'id')->toArray();
-        return view('statuses-edit', ['status' => $status, 'sites' => $sites, 'departments' => $departments]);
+        return view('status/edit', ['status' => $status, 'sites' => $sites, 'departments' => $departments]);
 
     }
 

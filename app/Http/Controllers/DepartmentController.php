@@ -22,7 +22,7 @@ class DepartmentController extends Controller
     public function index()
     {
         //List all available Sites
-        return view('departments');
+        return view('department/list');
     }
 
     /**
@@ -58,7 +58,7 @@ class DepartmentController extends Controller
     {
         //Show form to add new Sites
         $sites = \App\Site::pluck('name', 'id')->toArray();
-        return view('departments-create', ['sites' => $sites]);
+        return view('department/create', ['sites' => $sites]);
     }
 
     /**
@@ -110,7 +110,7 @@ class DepartmentController extends Controller
         //
         $sites = \App\Site::pluck('name', 'id')->toArray();
         $department = Department::with('site')->find($department->id);
-        return view('departments-edit', ['department' => $department, 'sites' => $sites]);
+        return view('department/edit', ['department' => $department, 'sites' => $sites]);
 
     }
 

@@ -8,6 +8,8 @@ use Yajra\Datatables\Datatables;
 use Carbon\Carbon;
 use App\Http\Requests\PatientStoreRequest;
 use App\Http\Requests\PatientUpdateRequest;
+use Notification;
+use App\Notifications\statusUpdated;
 
 class PatientController extends Controller
 {
@@ -23,7 +25,7 @@ class PatientController extends Controller
     public function index()
     {
         //List all available Sites
-        return view('patients');
+        return view('patient/list');
     }
 
     /**
@@ -49,7 +51,7 @@ class PatientController extends Controller
     {
         //Show form to add new Sites
         $sites = \App\Site::pluck('name', 'id')->toArray();
-        return view('patients-create', ['sites' => $sites]);
+        return view('patient/create', ['sites' => $sites]);
     }
 
     /**
@@ -67,16 +69,17 @@ class PatientController extends Controller
 
         $patient->first_name = request('first_name');
         $patient->last_name = request('last_name');
-        $patient->email_1 = request('email_1');
-        $patient->email_2 = request('email_2');
-        $patient->email_3 = request('email_3');
-        $patient->phone_number_1 = request('phone_number_1');
-        $patient->phone_number_2 = request('phone_number_2');
-        $patient->phone_number_3 = request('phone_number_3');
-
         $patient->date_of_service = Carbon::createFromFormat('m/d/Y', request('date_of_service'))->format('Y-m-d');
 
         $status->patient()->save($patient);
+
+        $emails = request('emails');
+
+        foreach ($emails as $key => $email_address) {
+            $email = new \App\Email;
+            $email->email = $email_address;
+            $patient->email()->save($email);
+        }
 
         $message = [
                 'text' => "Success: Patient ".$patient->first_name." has been added",
@@ -95,7 +98,7 @@ class PatientController extends Controller
     public function show(Patient $patient)
     {
         //
-        return view('patient-splash');
+        return view('patient/splash');
     }
 
     /**
@@ -110,10 +113,10 @@ class PatientController extends Controller
         $sites = \App\Site::pluck('name', 'id')->toArray();
         $departments = \App\Department::pluck('name', 'id')->toArray();
         $statuses = \App\Status::where('department_id', $patient->status->department->id)->pluck('name', 'id')->toArray();
-        $patient = Patient::with('status.department.site')->find($patient->id);
+        $patient = Patient::with('status.department.site', 'email')->find($patient->id);
         $patient->date_of_service = Carbon::createFromFormat('Y-m-d', $patient->date_of_service)->format('m/d/Y');
 
-        return view('patients-edit', ['patient' => $patient, 'sites' => $sites, 'departments' => $departments, 'statuses' => $statuses]);
+        return view('patient/edit', ['patient' => $patient, 'sites' => $sites, 'departments' => $departments, 'statuses' => $statuses]);
 
     }
 
@@ -142,6 +145,8 @@ class PatientController extends Controller
                 'text' => "Success: Patient ".$patient->first_name." has been updated",
                 'type' => "success"
             ];
+
+        Notification::send($patient, new statusUpdated($patient));
 
         return redirect()->action('PatientController@index')->with('message', $message);
     }

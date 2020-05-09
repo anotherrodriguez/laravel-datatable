@@ -22,7 +22,7 @@ class SiteController extends Controller
     public function index()
     {
         //List all available Sites
-        return view('sites');
+        return view('site/list');
     }
 
     /**
@@ -100,7 +100,7 @@ class SiteController extends Controller
     public function create()
     {
         //Show form to add new Sites
-        return view('sites-create-edit', ['states' => self::$states]);
+        return view('site/create-edit', ['states' => self::$states]);
     }
 
     /**
@@ -152,7 +152,7 @@ class SiteController extends Controller
     public function edit(Site $site)
     {
         //
-        return view('sites-create-edit',['site' => Site::find($site->id), 'states' => self::$states, 'edit' => true]);
+        return view('site/create-edit',['site' => Site::find($site->id), 'states' => self::$states, 'edit' => true]);
     }
 
     /**

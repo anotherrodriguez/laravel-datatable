@@ -51,21 +51,21 @@
     <div class="hide" id="email-input-block">
       {{ Form::label('inputDepartment', 'Email')}}
         <div class="input-group mb-3" id="email_1">
-        {{ Form::email('email_1', $value = NULL,['placeholder' => 'Email', 'class' => 'form-control']) }}
+        {{ Form::email('emails[]', $value = NULL,['placeholder' => 'Email', 'class' => 'form-control']) }}
           <div class="input-group-append">
         <button class="btn btn-outline-secondary" type="button" id="add-email">+</button>
         </div>
       </div>
 
       <div class="input-group mb-3 email-input hide" id="email_2">
-        {{ Form::email('email_2', $value = NULL,['placeholder' => 'Email', 'class' => 'form-control']) }}
+        {{ Form::email('emails[]', $value = NULL,['placeholder' => 'Email', 'class' => 'form-control']) }}
           <div class="input-group-append">
         <button class="btn btn-outline-secondary minus-email" type="button" id="minus-email_2">-</button>
         </div>
       </div>
 
       <div class="input-group mb-3 email-input hide" id="email_3">
-        {{ Form::email('email_3', $value = NULL,['placeholder' => 'Email', 'class' => 'form-control']) }}
+        {{ Form::email('emails[]', $value = NULL,['placeholder' => 'Email', 'class' => 'form-control']) }}
           <div class="input-group-append">
         <button class="btn btn-outline-secondary minus-email" type="button" id="minus-email_3">-</button>
         </div>
@@ -77,21 +77,21 @@
     <div class="hide" id="phone-input-block">
       {{ Form::label('inputDepartment', 'Phone Number')}}
       <div class="input-group mb-3" id="phone_number_1">
-        {{ Form::text('phone_number_1', $value = NULL,['placeholder' => 'Phone Number', 'class' => 'form-control phone-number']) }}
+        {{ Form::text('phones[]', $value = NULL,['placeholder' => 'Phone Number', 'class' => 'form-control phone-number']) }}
         <div class="input-group-append">
           <button class="btn btn-outline-secondary" type="button" id="add-phone">+</button>
         </div>
       </div>
 
       <div class="input-group mb-3 phone-input hide" id="phone_number_2">
-        {{ Form::text('phone_number_2', $value = NULL,['placeholder' => 'Phone Number', 'class' => 'form-control phone-number']) }}
+        {{ Form::text('phones[]', $value = NULL,['placeholder' => 'Phone Number', 'class' => 'form-control phone-number']) }}
         <div class="input-group-append">
           <button class="btn btn-outline-secondary minus-phone" type="button" id="minus-phone_number_2">-</button>
         </div>
       </div>
 
       <div class="input-group mb-3 phone-input hide" id="phone_number_3">
-        {{ Form::text('phone_number_3', $value = NULL,['placeholder' => 'Phone Number', 'class' => 'form-control phone-number']) }}
+        {{ Form::text('phones[]', $value = NULL,['placeholder' => 'Phone Number', 'class' => 'form-control phone-number']) }}
         <div class="input-group-append">
           <button class="btn btn-outline-secondary minus-phone" type="button" id="minus-phone_number_3">-</button>
         </div>

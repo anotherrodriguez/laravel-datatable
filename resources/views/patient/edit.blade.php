@@ -26,19 +26,13 @@
         <button class="btn btn-outline-secondary" type="button"><i class="far fa-calendar-alt"></i></button>
         </div>
       </div>
-      
-@if($patient->email_1)
+ 
+@forelse ($patient->email as $email)
       {{ Form::label('inputDepartment', 'email')}}
-      {{ Form::text('email_1', $value = NULL,['class' => 'form-control', 'disabled' => 'disabled']) }}
-@endif
-
-@if($patient->email_2)
-      {{ Form::text('email_2', $value = NULL,['class' => 'form-control mt-3', 'disabled' => 'disabled']) }}
-@endif
-
-@if($patient->email_3)
-      {{ Form::text('email_3', $value = NULL,['class' => 'form-control mt-3', 'disabled' => 'disabled']) }}
-@endif
+      {{ Form::text('email[]', $email->email,['class' => 'form-control', 'disabled' => 'disabled']) }}
+@empty
+    
+@endforelse
 
 @if($patient->phone_number_1)
       {{ Form::label('inputDepartment', 'Phone Number')}}

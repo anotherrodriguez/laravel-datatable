@@ -3,9 +3,11 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 
 class Patient extends Model
 {
+    use Notifiable;
     /**
      * The attributes that are mass assignable.
      *
@@ -14,12 +16,6 @@ class Patient extends Model
     protected $fillable = [
         'first_name',
         'last_name',
-        'email_1',
-        'email_2',
-        'email_3',
-        'phone_number_1',
-        'phone_number_2',
-        'phone_number_3',
         'date_of_service'
     ];
 
@@ -29,6 +25,11 @@ class Patient extends Model
     public function status()
     {
         return $this->belongsTo('App\Status');
+    }
+
+    public function email()
+    {
+        return $this->hasMany('App\Email');
     }
 
 }
