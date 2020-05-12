@@ -41,6 +41,11 @@ class RegisterController extends Controller
         $this->middleware('guest');
     }
 
+    public function showRegistrationForm()
+    {
+        $sites = \App\Site::pluck('name', 'id')->toArray();
+        return view('auth.register', ['sites' => $sites]);
+    }
     /**
      * Get a validator for an incoming registration request.
      *
