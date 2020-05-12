@@ -12,7 +12,7 @@ class SiteController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('verified');
+        $this->middleware(['verified', 'can:isAdmin']);
     }
     /**
      * Display a listing of the resource.

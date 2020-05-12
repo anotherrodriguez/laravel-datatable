@@ -13,6 +13,9 @@ class SiteSeeder extends Seeder
     public function run()
     {
         //
-        $sites = factory(Site::class, 10)->create();
+        $sites = factory(Site::class, 3)->create()
+           ->each(function ($site) {
+                $site->user()->save(factory(App\User::class)->make());
+            });
     }
 }

@@ -28,7 +28,7 @@ class PatientStoreRequest extends FormRequest
             'first_name' => ['required', 'max:255'],
             'last_name' => ['required', 'max:255'],
             'notification' => ['required'],
-            'status_id' => ['required']
+            'department_id' => ['required']
         ];
     }
 }

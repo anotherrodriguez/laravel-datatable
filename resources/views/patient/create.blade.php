@@ -15,9 +15,6 @@
       {{ Form::label('inputDepartment', 'Department Name')}}
       {{ Form::select('department_id',[],null, ['placeholder' => 'Pick a department...', 'class' => 'form-control', 'id' => 'department_select']) }}
 
-      {{ Form::label('inputDepartment', 'Status')}}
-      {{ Form::select('status_id',[],null, ['placeholder' => 'Pick a status...', 'class' => 'form-control', 'id' => 'status_select']) }}
-
       {{ Form::label('inputDepartment', 'First Name')}}
       {{ Form::text('first_name', $value = NULL, ['placeholder' => 'First Name', 'class' => 'form-control']) }}
 
@@ -50,54 +47,10 @@
 
     <div class="hide" id="email-input-block">
       {{ Form::label('inputDepartment', 'Email')}}
-        <div class="input-group mb-3" id="email_1">
-        {{ Form::email('emails[]', $value = NULL,['placeholder' => 'Email', 'class' => 'form-control']) }}
-          <div class="input-group-append">
-        <button class="btn btn-outline-secondary" type="button" id="add-email">+</button>
-        </div>
-      </div>
-
-      <div class="input-group mb-3 email-input hide" id="email_2">
-        {{ Form::email('emails[]', $value = NULL,['placeholder' => 'Email', 'class' => 'form-control']) }}
-          <div class="input-group-append">
-        <button class="btn btn-outline-secondary minus-email" type="button" id="minus-email_2">-</button>
-        </div>
-      </div>
-
-      <div class="input-group mb-3 email-input hide" id="email_3">
-        {{ Form::email('emails[]', $value = NULL,['placeholder' => 'Email', 'class' => 'form-control']) }}
-          <div class="input-group-append">
-        <button class="btn btn-outline-secondary minus-email" type="button" id="minus-email_3">-</button>
-        </div>
-      </div>
-
-      <div class="input-group mb-3 hide" id="max-email-message"><small>Maximum Emails Reached</small></div>
     </div>
 
     <div class="hide" id="phone-input-block">
       {{ Form::label('inputDepartment', 'Phone Number')}}
-      <div class="input-group mb-3" id="phone_number_1">
-        {{ Form::text('phones[]', $value = NULL,['placeholder' => 'Phone Number', 'class' => 'form-control phone-number']) }}
-        <div class="input-group-append">
-          <button class="btn btn-outline-secondary" type="button" id="add-phone">+</button>
-        </div>
-      </div>
-
-      <div class="input-group mb-3 phone-input hide" id="phone_number_2">
-        {{ Form::text('phones[]', $value = NULL,['placeholder' => 'Phone Number', 'class' => 'form-control phone-number']) }}
-        <div class="input-group-append">
-          <button class="btn btn-outline-secondary minus-phone" type="button" id="minus-phone_number_2">-</button>
-        </div>
-      </div>
-
-      <div class="input-group mb-3 phone-input hide" id="phone_number_3">
-        {{ Form::text('phones[]', $value = NULL,['placeholder' => 'Phone Number', 'class' => 'form-control phone-number']) }}
-        <div class="input-group-append">
-          <button class="btn btn-outline-secondary minus-phone" type="button" id="minus-phone_number_3">-</button>
-        </div>
-      </div>
-
-      <div class="input-group mb-3 hide" id="max-phone-message"><small>Maximum Phone Numbers Reached</small></div>
     </div>
 
     </div>
@@ -124,16 +77,26 @@
   $('.form-check-input').click(function(){
     switch($(this).val()) {
       case 'email':
+      $('.email-input').remove();
+        $('.phone-input').remove();
         $('#email-input-block').removeClass('hide');
+        $("#email-input-block").append(emailHtml);
         $('#phone-input-block').addClass('hide');
         break;
       case 'phone':
+        $('.email-input').remove();
+        $('.phone-input').remove();
         $('#email-input-block').addClass('hide');
         $('#phone-input-block').removeClass('hide');
+        $("#phone-input-block").append(phoneHtml);
         break;
       case 'both':
+        $('.email-input').remove();
+        $('.phone-input').remove();
         $('#email-input-block').removeClass('hide');
         $('#phone-input-block').removeClass('hide');
+        $("#email-input-block").append(emailHtml);
+        $("#phone-input-block").append(phoneHtml);
         break;
       default:
         // code block
@@ -144,46 +107,28 @@
     todayHighlight: true
   });
 
+var emailHtml ='<div class="input-group mb-3 email-input" id="email_1"><input placeholder="Email" class="form-control" name="emails[]" type="email"><div class="input-group-append"><button class="btn btn-outline-secondary" type="button" id="add-email">+</button></div></div>';
 
-    var emailIds = [];
+var addEmailHtml = '<div class="input-group mb-3 email-input"><input placeholder="Email" class="form-control" name="emails[]" type="email"><div class="input-group-append"><button class="btn btn-outline-secondary minus-email" type="button">-</button></div></div>';
 
-    function addFields(fieldArray){
-      if(fieldArray.length!=0){
-          var fieldId = fieldArray[0];
-          $('#'+fieldId).css('display', 'flex');
-          $('#'+fieldId).addClass('show');
-        }
-      else{
-        $('#max-email-message').css('display', 'flex');
-      }
-    }
+var phoneHtml = '<div class="input-group mb-3 phone-input" id="phone_number_1"><input placeholder="Phone Number" class="form-control phone-number" name="phones[]" type="text" inputmode="text"><div class="input-group-append"><button class="btn btn-outline-secondary" type="button" id="add-phone">+</button></div></div>';
+
+var addPhoneHtml = '<div class="input-group mb-3 phone-input"><input placeholder="Phone Number" class="form-control phone-number" name="phones[]" type="text" inputmode="text"><div class="input-group-append"><button class="btn btn-outline-secondary minus-phone" type="button">-</button></div></div>';
   
-    $('#add-email').click(function(){
-      emailIds = $(".email-input").not('.show').map(function() { return this.id; });
-      addFields(emailIds);
+    $('#email-input-block').on('click', '#add-email', function(){
+      $("#email-input-block").append(addEmailHtml);
     });
 
-    $('#add-phone').click(function(){
-      phoneIds = $(".phone-input").not('.show').map(function() { return this.id; });
-      addFields(phoneIds);
+    $('#phone-input-block').on('click', '#add-phone', function(){
+      $("#phone-input-block").append(addPhoneHtml);
     });
 
-    $('.minus-email').click(function(){
-       var minusId = $(this).attr('id');
-       var emailId = minusId.split('-')[1];
-       emailIds.push('#'+emailId);
-       $('#'+emailId).css('display', 'none');
-       $('#'+emailId).removeClass('show');
-       $('#max-email-message').css('display', 'none');
+    $('#email-input-block').on('click', '.minus-email', function(){
+      $(this).parent().parent().remove();
         });
 
-    $('.minus-phone').click(function(){
-       var minusId = $(this).attr('id');
-       var phoneId = minusId.split('-')[1];
-       phoneIds.push('#'+phoneId);
-       $('#'+phoneId).css('display', 'none');
-       $('#'+phoneId).removeClass('show');
-       $('#max-phone-message').css('display', 'none');
+    $('#phone-input-block').on('click', '.minus-phone', function(){
+      $(this).parent().parent().remove();
         });
 
     
@@ -210,24 +155,6 @@
                }
             });
     });
-
-    $('#department_select').change(function(){
-       $.ajax({
-               type:'POST',
-               url:'/getStatuses',
-               data:{
-               'department_id':$(this).val()
-                },
-               success:function(data) {
-               var options = '<option selected="selected" value="">Pick a status...</option>';
-               $.each(data, function(key, status){
-                  options += '<option value="'+status.id+'">'+status.name+'</option>';
-                });
-                $('#status_select').html(options);
-               }
-            });
-    })
-
 
     $(".phone-number").inputmask({
       "mask": "(999) 999-9999",

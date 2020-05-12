@@ -12,7 +12,7 @@ class DepartmentController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('verified', ['except' => ['getDepartments']]);
+        $this->middleware(['verified', 'can:isAdmin'], ['except' => ['getDepartments']]);
     }
     /**
      * Display a listing of the resource.
@@ -79,6 +79,14 @@ class DepartmentController extends Controller
         $department->name = request('name');
 
         $site->department()->save($department);
+
+        $status = new \App\Status;
+
+        $status->name = 'Signed Up';
+
+        $status->list_order = 0;
+
+        $department->status()->save($status);
 
         $message = [
             'text' => "Success: Department ".$department->name." has been created.",

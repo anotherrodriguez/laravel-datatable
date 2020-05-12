@@ -21,6 +21,8 @@ Route::get('/statusData', 'StatusController@getData')->name('status.getData');
 
 Route::get('/patientData', 'PatientController@getData')->name('patient.getData');
 
+Route::get('/UserData', 'UserController@getData')->name('user.getData');
+
 Route::post('/getDepartments', 'DepartmentController@getDepartments');
 
 Route::post('/getStatuses', 'StatusController@getStatuses');
@@ -29,13 +31,13 @@ Route::resources([
     'sites' => 'SiteController',
     'departments' => 'DepartmentController',
     'statuses' => 'StatusController',
-    'patients' => 'PatientController'
+    'patients' => 'PatientController',
+    'users' => 'UserController'
 ]);
 
-Route::get('/', 'Auth\LoginController@showLoginForm');
+//Route::get('/', 'Auth\LoginController@showLoginForm');
+Route::get('/', 'PatientController@create');
 
 Auth::routes(['verify' => true]);
 
 Route::get('/home', 'HomeController@index')->name('home');
-
-Route::get('/test', 'PatientController@show');

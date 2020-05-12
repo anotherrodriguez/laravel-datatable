@@ -40,12 +40,15 @@
 @guest
         <a href="{{ action('PatientController@create')}}" class="list-group-item list-group-item-action bg-light"><i class="fad fa-user-plus"></i> Patient Sign up</a>
 @else
+  @can('isAdmin')
+        <a href="{{ action('UserController@index')}}" class="list-group-item list-group-item-action bg-light"><i class="fad fa-edit"></i> Manage Users</a>
+
         <a href="{{ action('SiteController@index')}}" class="list-group-item list-group-item-action bg-light"><i class="fad fa-edit"></i> Manage Sites</a>
 
         <a href="{{ action('DepartmentController@index')}}" class="list-group-item list-group-item-action bg-light"><i class="fad fa-edit"></i> Manage Departments</a>
 
         <a href="{{ action('StatusController@index')}}" class="list-group-item list-group-item-action bg-light"><i class="fad fa-edit"></i> Manage Statuses</a>
-
+  @endcan
         <a href="{{ action('PatientController@index')}}" class="list-group-item list-group-item-action bg-light"><i class="fad fa-edit"></i> Manage Patients</a>
 
         <a href="{{ route('logout') }}" class="list-group-item list-group-item-action bg-light" id="logout">Logout</a>

@@ -15,6 +15,9 @@
                     @endif
 
                     You are logged in!
+                      @can('isNew')
+                        You are new
+                      @endcan
                 </div>
             </div>
         </div>

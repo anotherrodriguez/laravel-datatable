@@ -10,12 +10,14 @@ use App\Http\Requests\PatientStoreRequest;
 use App\Http\Requests\PatientUpdateRequest;
 use Notification;
 use App\Notifications\statusUpdated;
+use Illuminate\Support\Facades\Auth;
 
 class PatientController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('verified', ['except' => ['create', 'store', 'show']]);
+        $this->middleware(['verified'], ['except' => ['create', 'store', 'show']]);
+        $this->authorizeResource(Patient::class, 'patient');
     }
     /**
      * Display a listing of the resource.
@@ -35,10 +37,24 @@ class PatientController extends Controller
      */
     public function getData()
     {
-        $patients = Patient::with(['status.department.site'])->get();
-        return Datatables::of($patients)->addColumn('action', function ($patients) {
+        $user = Auth::user();
+        if($user->role->name==='super_admin'){
+            $patients = Patient::with(['status.department.site'])->get();
+            return Datatables::of($patients)->addColumn('action', function ($patients) {
                 return action('PatientController@edit', $patients->id);
             })->make(true);
+
+        }
+        else{
+            $patients = Patient::with(['status.department.site'])->whereHas('status.department.site', function($q){
+            $q->where('id', $user->site->id);
+            })->get();
+            return Datatables::of($patients)->addColumn('action', function ($patients) {
+                return action('PatientController@edit', $patients->id);
+            })->make(true);
+
+        }
+        
     }
 
 
@@ -63,7 +79,7 @@ class PatientController extends Controller
     public function store(PatientStoreRequest $request)
     {
         //
-        $status = \App\Status::find(request('status_id'));
+        $status = \App\Status::where([['department_id', request('department_id')], ['name', 'Signed Up']])->firstOrFail();
 
         $patient = new Patient;
 
@@ -117,7 +133,7 @@ class PatientController extends Controller
         $patient->date_of_service = Carbon::createFromFormat('Y-m-d', $patient->date_of_service)->format('m/d/Y');
 
         return view('patient/edit', ['patient' => $patient, 'sites' => $sites, 'departments' => $departments, 'statuses' => $statuses]);
-
+        
     }
 
     /**

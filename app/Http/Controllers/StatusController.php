@@ -12,7 +12,7 @@ class StatusController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('verified', ['except' => ['getStatuses']]);
+        $this->middleware(['verified', 'can:isAdmin'], ['except' => ['getStatuses']]);
     }
     /**
      * Display a listing of the resource.
