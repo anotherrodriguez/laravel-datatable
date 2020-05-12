@@ -37,9 +37,8 @@ class PatientController extends Controller
      */
     public function getData()
     {
-        
+        $user = Auth::user();
         if($user->role->name==='super_admin'){
-            $user = Auth::user();
             $patients = Patient::with(['status.department.site'])->get();
             return Datatables::of($patients)->addColumn('action', function ($patients) {
                 return action('PatientController@edit', $patients->id);
@@ -47,9 +46,8 @@ class PatientController extends Controller
 
         }
         else{
-            $user = Auth::user();
             $patients = Patient::with(['status.department.site'])->whereHas('status.department.site', function($q){
-            $q->where('id', $user->site->id);
+            $q->where('id', Auth::user()->site->id);
             })->get();
             return Datatables::of($patients)->addColumn('action', function ($patients) {
                 return action('PatientController@edit', $patients->id);
