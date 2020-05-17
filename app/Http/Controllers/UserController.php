@@ -34,7 +34,7 @@ class UserController extends Controller
     {
         $user = Auth::user();
 
-        if($user->role->name === 'super_admin'){
+        if($user->isSuperAdmin()){
             $users = User::with(['role', 'site'])->get();
             return Datatables::of($users)->addColumn('action', function ($users) {
                 return action('UserController@edit', $users->id);

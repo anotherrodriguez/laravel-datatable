@@ -10,13 +10,17 @@ use App\Http\Requests\PatientStoreRequest;
 use App\Http\Requests\PatientUpdateRequest;
 use Notification;
 use App\Notifications\statusUpdated;
+use App\Notifications\patientCreated;
 use Illuminate\Support\Facades\Auth;
+use App\Traits\SiteTrait;
 
 class PatientController extends Controller
 {
+    use SiteTrait;
+
     public function __construct()
     {
-        $this->middleware(['verified'], ['except' => ['create', 'store', 'show']]);
+        $this->middleware(['verified'], ['except' => ['create', 'store', 'show', 'validatePatient']]);
         $this->authorizeResource(Patient::class, 'patient');
     }
     /**
@@ -38,7 +42,7 @@ class PatientController extends Controller
     public function getData()
     {
         $user = Auth::user();
-        if($user->role->name==='super_admin'){
+        if($user->isSuperAdmin()){
             $patients = Patient::with(['status.department.site'])->get();
             return Datatables::of($patients)->addColumn('action', function ($patients) {
                 return action('PatientController@edit', $patients->id);
@@ -89,22 +93,40 @@ class PatientController extends Controller
 
         $status->patient()->save($patient);
 
-        $emails = request('emails');
+        if ($request->has('emails')) {
 
-        foreach ($emails as $key => $email_address) {
-            $email = new \App\Email;
-            $email->email = $email_address;
-            $patient->email()->save($email);
+            $emails = request('emails');
+
+            foreach ($emails as $key => $email_address) {
+                $email = new \App\Email;
+                $email->email = $email_address;
+                $patient->email()->save($email);
+            }
         }
 
-        $message = [
-                'text' => "Success: Patient ".$patient->first_name." has been added",
-                'type' => "success"
-            ];
+        if ($request->has('phone_numbers')) {
 
-        return redirect()->action('PatientController@show', $patient)->with('message', $message);
+            $phone_numbers = request('phone_numbers');
+
+            foreach ($phone_numbers as $key => $number) {
+                $phone_number = new \App\PhoneNumber;
+                $phone_number->phone_number = $number;
+                $patient->phoneNumber()->save($phone_number);
+            }
+        }
+
+        $patient->load('email');
+        $patient->load('phoneNumber');
+
+        Notification::send($patient, new patientCreated($patient));
+        return redirect()->action('PatientController@show', $patient);
     }
 
+    public function validatePatient(PatientStoreRequest $request)
+    {
+        
+
+    }
     /**
      * Display the specified resource.
      *
@@ -126,9 +148,9 @@ class PatientController extends Controller
     public function edit(Patient $patient)
     {
         //
-        $sites = \App\Site::pluck('name', 'id')->toArray();
-        $departments = \App\Department::pluck('name', 'id')->toArray();
-        $statuses = \App\Status::where('department_id', $patient->status->department->id)->pluck('name', 'id')->toArray();
+        $sites = $this->getSites(Auth::user());
+        $departments = $this->getDepartments(Auth::user());
+        $statuses = \App\Status::where('department_id', $patient->status->department->id)->orderBy('list_order', 'asc')->pluck('name', 'id')->toArray();
         $patient = Patient::with('status.department.site', 'email')->find($patient->id);
         $patient->date_of_service = Carbon::createFromFormat('Y-m-d', $patient->date_of_service)->format('m/d/Y');
 
@@ -145,24 +167,68 @@ class PatientController extends Controller
      */
     public function update(PatientUpdateRequest $request, Patient $patient)
     {
-        $status = \App\Status::find(request('status_id'));
+        $new_status = \App\Status::find(request('status_id'));
+        $old_status =  \App\Status::find($patient->status_id);
 
-        $patient->status()->associate($status);
+        if($new_status != $old_status){
+            if($new_status->list_order >= $old_status->list_order){
+                $patient->status()->associate($new_status);
+                $patient->save();
+                Notification::send($patient, new statusUpdated($patient));
+            }
+            else{
+                $message = [
+                                'text' => "Error: Patient status can not reverse in order",
+                                'type' => "error"
+                            ];
 
-        $patient->date_of_service = Carbon::createFromFormat('m/d/Y', request('date_of_service'))->format('Y-m-d');
+                return redirect()->action('PatientController@index')->with('message', $message);
+            }
+        }
 
-         //Save Patient Data
-        $patient->update([
-            'first_name' => request('first_name'),
-            'last_name' => request('last_name'),
-        ]);
+        if($request->has('date_of_service')){
+            $patient->date_of_service = Carbon::createFromFormat('m/d/Y', request('date_of_service'))->format('Y-m-d');
+
+             //Save Patient Data
+            $patient->update([
+                'first_name' => request('first_name'),
+                'last_name' => request('last_name'),
+            ]);
+
+            if ($request->has('emails')) {
+
+                $emails = request('emails');
+
+                foreach ($emails as $key => $email_address) {
+                    $email = new \App\Email;
+                    $email->email = $email_address;
+                    $patient->email()->save($email);
+                }
+            }
+
+            if ($request->has('phone_numbers')) {
+
+                $phone_numbers = request('phone_numbers');
+
+                foreach ($phone_numbers as $key => $number) {
+                    $phone_number = new \App\PhoneNumber;
+                    $phone_number->phone_number = $number;
+                    $patient->phoneNumber()->save($phone_number);
+                }
+            }
+        }
 
         $message = [
-                'text' => "Success: Patient ".$patient->first_name." has been updated",
+                'text' => "Success: Patient ".$patient->first_name." has been updated with status of: ".$patient->status->name,
                 'type' => "success"
             ];
+        
 
-        Notification::send($patient, new statusUpdated($patient));
+        if($new_status->isComplete()){
+            $patient->email()->delete();
+            $patient->phoneNumber()->delete();
+            $patient->delete();
+        }
 
         return redirect()->action('PatientController@index')->with('message', $message);
     }

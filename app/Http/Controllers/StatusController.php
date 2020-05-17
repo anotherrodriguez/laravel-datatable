@@ -7,9 +7,13 @@ use Illuminate\Http\Request;
 use Yajra\Datatables\Datatables;
 use App\Http\Requests\StatusStoreRequest;
 use App\Http\Requests\StatusUpdateRequest;
+use Illuminate\Support\Facades\Auth;
+use App\Traits\SiteTrait;
 
 class StatusController extends Controller
 {
+    use SiteTrait;
+    
     public function __construct()
     {
         $this->middleware(['verified', 'can:isAdmin'], ['except' => ['getStatuses']]);
@@ -32,10 +36,21 @@ class StatusController extends Controller
      */
     public function getData()
     {
-        $statuses = Status::with(['department.site'])->orderBy('list_order', 'asc')->get();
-        return Datatables::of($statuses)->addColumn('action', function ($statuses) {
-                return action('StatusController@edit', $statuses->id);
-            })->make(true);
+        $user = Auth::user();
+        if($user->isSuperAdmin()){
+            $statuses = Status::with(['department.site'])->orderBy('list_order', 'asc')->get();
+            return Datatables::of($statuses)->addColumn('action', function ($statuses) {
+                    return action('StatusController@edit', $statuses->id);
+                })->make(true);
+        }
+        else{
+            $statuses = Status::with(['department.site'])->whereHas('department.site', function($q){
+            $q->where('id', Auth::user()->site->id);
+            })->orderBy('list_order', 'asc')->get();
+            return Datatables::of($statuses)->addColumn('action', function ($statuses) {
+                    return action('StatusController@edit', $statuses->id);
+                })->make(true);
+        }
     }
 
     /**
@@ -57,7 +72,7 @@ class StatusController extends Controller
     public function create()
     {
         //Show form to add new Sites
-        $sites = \App\Site::pluck('name', 'id')->toArray();
+        $sites = $this->getSites(Auth::user());
         return view('status/create', ['sites' => $sites]);
     }
 
@@ -125,7 +140,7 @@ class StatusController extends Controller
     public function edit(Status $status)
     {
         //
-        $sites = \App\Site::pluck('name', 'id')->toArray();
+        $sites = $this->getSites(Auth::user());
         $departments = \App\Department::where('site_id', $status->department->site->id)->pluck('name', 'id')->toArray();
         return view('status/edit', ['status' => $status, 'sites' => $sites, 'departments' => $departments]);
 
@@ -140,9 +155,14 @@ class StatusController extends Controller
      */
     public function update(StatusUpdateRequest $request, Status $status)
     {
-        $department = \App\Department::find(request('department_id'));
+        $statuses = request('status');  
 
-        $status->department()->associate($department);
+        foreach ($statuses as $key => $old_status) {
+            $status = Status::find($old_status['id']);
+            $status->update([
+            'list_order' => $old_status['order']
+            ]);
+        }
 
          //Save Status Data
         $status->update([

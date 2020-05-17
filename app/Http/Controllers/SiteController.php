@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Yajra\Datatables\Datatables;
 use App\Http\Requests\SiteStoreRequest;
 use App\Http\Requests\SiteUpdateRequest;
+use Illuminate\Support\Facades\Auth;
 
 class SiteController extends Controller
 {
@@ -32,10 +33,20 @@ class SiteController extends Controller
      */
     public function getData()
     {
-        $sites = Site::select(['id', 'name', 'address', 'city', 'state', 'zip_code'])->get();
-        return Datatables::of($sites)->addColumn('action', function ($sites) {
-                return action('SiteController@edit', $sites->id);
-            })->make(true);
+        $user = Auth::user();
+        if($user->isSuperAdmin()){
+            $sites = Site::select(['id', 'name', 'address', 'city', 'state', 'zip_code'])->get();
+            return Datatables::of($sites)->addColumn('action', function ($sites) {
+                    return action('SiteController@edit', $sites->id);
+                })->make(true);
+        }
+        else{
+            $sites = Site::select(['id', 'name', 'address', 'city', 'state', 'zip_code'])->where('id', $user->site->id)->get();
+            return Datatables::of($sites)->addColumn('action', function ($sites) {
+                    return action('SiteController@edit', $sites->id);
+                })->make(true);
+
+        }
     }
 
     public static $states = [

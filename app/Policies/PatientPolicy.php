@@ -19,7 +19,7 @@ class PatientPolicy
     public function viewAny(User $user)
     {
         //
-        return $user->role->name === 'user' | $user->role->name === 'admin' | $user->role->name === 'super_admin';
+        return $user->isUser();
     }
 
     /**
@@ -57,7 +57,7 @@ class PatientPolicy
     public function update(User $user, Patient $patient)
     {
         //
-        if($user->role->name === 'super_admin'){
+        if($user->isSuperAdmin()){
             return true;
         }
         return $user->site->id === $patient->status->department->site->id;

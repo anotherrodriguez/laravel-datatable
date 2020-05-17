@@ -79,6 +79,21 @@ table.dataTable.dtr-inline.collapsed > tbody > tr.parent > th:first-child:before
     float: right;
 }
 
+.sortable:first-child {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.sortable:last-child {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-bottom: -1px;
+}
+
+.invalid-feedback {
+  display: block;
+}
+
 .hide{
   display: none;
 }

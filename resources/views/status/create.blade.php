@@ -24,7 +24,9 @@
 
       {{ Form::label('inputSite', 'List Order')}}
         <!-- List with handle -->
-      <div class="list-group" id="listWithHandle">
+      <div class="list-group" id="list-defaults">
+        <div class="list-group" id="listWithHandle">
+        </div>
       </div>
 
     </div>
@@ -48,9 +50,20 @@
 
 @push('jQueryScript')
 
-    function buttonHtml(statusName){
-      var button = '<button type="button" class="list-group-item list-group-item-action">'+statusName+'</button>';
-      return button;
+    function buttonHtml(status, hiddenField){
+      if(status.name=='Signed Up' | status.name=='Complete'){
+        var button = '<button type="button" class="list-group-item list-group-item-action">'+status.name + hiddenField +'</button>';
+        if(status.name=='Signed Up'){
+          $('#listWithHandle').before(button);
+        }
+        else{
+          $('#listWithHandle').after(button);
+        }
+      }
+      else{
+        var button = '<button type="button" class="list-group-item sortable list-group-item-action">'+status.name + hiddenField +'</button>';
+        $('#listWithHandle').append(button);
+      }
     };
 
     function setOrder(){
@@ -72,10 +85,10 @@
     $('#add-status').click(function(){
       var minusButton = '<span class="float-right minus-status"><i class="fas fa-minus"></i></span>';
       var buttonData = $('#statusName').val() + minusButton;
+      var status = {'name': $('#statusName').val()};
       var hiddenField = '<input name="new_status['+i+'][name]" value="'+$('#statusName').val()+'" type="hidden">';
       hiddenField += '<input class="status-order" name="new_status['+i+'][order]" value="3" type="hidden">';
-      var button = buttonHtml(buttonData+hiddenField);
-      $('#listWithHandle').append(button);
+      var button = buttonHtml(status, minusButton+hiddenField);
       ++i;
       setOrder();
     });
@@ -117,10 +130,13 @@
                success:function(data) {
                $('#listWithHandle').html('');
                 $.each(data, function(key, status){
-                   var hiddenField = '<input name="status['+i+'][id]" value="'+status.id+'" type="hidden">';
+                  
+                  var hiddenField = '<input name="status['+i+'][id]" value="'+status.id+'" type="hidden">';
                   hiddenField += '<input class="status-order" name="status['+i+'][order]" value="'+status.list_order+'" type="hidden">';
-                  var button = buttonHtml(status.name+hiddenField);
-                   $('#listWithHandle').append(button);
+                  
+                  var button = buttonHtml(status, hiddenField);
+                  
+                   
                    i++;
                 });
                }

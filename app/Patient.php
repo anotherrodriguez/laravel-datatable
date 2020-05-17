@@ -32,4 +32,9 @@ class Patient extends Model
         return $this->hasMany('App\Email');
     }
 
+    public function phoneNumber()
+    {
+        return $this->hasMany('App\PhoneNumber');
+    }
+
 }

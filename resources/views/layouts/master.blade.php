@@ -36,7 +36,7 @@
     <div class="bg-light border-right" id="sidebar-wrapper">
       <div class="sidebar-heading">Menu </div>
       <div class="list-group list-group-flush">
-        <a href="{{ action('HomeController@index') }}" class="list-group-item list-group-item-action bg-light"><i class="fad fa-home-alt"></i> Home</a>
+        <a href="{{ route('login') }}" class="list-group-item list-group-item-action bg-light"><i class="fad fa-home-alt"></i> Home</a>
 @guest
         <a href="{{ action('PatientController@create')}}" class="list-group-item list-group-item-action bg-light"><i class="fad fa-user-plus"></i> Patient Sign up</a>
 @else

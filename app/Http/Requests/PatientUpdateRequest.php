@@ -25,9 +25,15 @@ class PatientUpdateRequest extends FormRequest
     {
         return [
             //
-            'first_name' => ['required', 'max:255'],
-            'last_name' => ['required', 'max:255'],
-            'status_id' => ['required']
+            'first_name' => ['sometimes', 'required', 'max:255'],
+            'last_name' => ['sometimes', 'required', 'max:255'],
+            'notification' => ['sometimes', 'required'],
+            'emails.*' => ['sometimes', 'required', 'email:rfc,dns' ],
+            'phone_numbers.*' => ['sometimes', 'required', 'phone_number:test'],
+            'department_id' => ['sometimes', 'required'],
+            'date_of_service' => ['sometimes', 'required'],
+            'site_id' => ['sometimes', 'required'],
+            'status_id' => ['required'],
         ];
     }
 }

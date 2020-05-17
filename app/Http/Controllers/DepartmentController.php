@@ -7,9 +7,13 @@ use Illuminate\Http\Request;
 use Yajra\Datatables\Datatables;
 use App\Http\Requests\DepartmentStoreRequest;
 use App\Http\Requests\DepartmentUpdateRequest;
+use Illuminate\Support\Facades\Auth;
+use App\Traits\SiteTrait;
 
 class DepartmentController extends Controller
 {
+    use SiteTrait;
+
     public function __construct()
     {
         $this->middleware(['verified', 'can:isAdmin'], ['except' => ['getDepartments']]);
@@ -32,10 +36,19 @@ class DepartmentController extends Controller
      */
     public function getData()
     {
-        $departments = Department::with('site')->get();
-        return Datatables::of($departments)->addColumn('action', function ($departments) {
-                return action('DepartmentController@edit', $departments->id);
-            })->make(true);
+        $user = Auth::user();
+        if($user->isSuperAdmin()){
+            $departments = Department::with('site')->get();
+            return Datatables::of($departments)->addColumn('action', function ($departments) {
+                    return action('DepartmentController@edit', $departments->id);
+                })->make(true);
+        }
+        else{
+            $departments = Department::with('site')->where('site_id', $user->site->id)->get();
+            return Datatables::of($departments)->addColumn('action', function ($departments) {
+                    return action('DepartmentController@edit', $departments->id);
+                })->make(true);
+        }
     }
 
     /**
@@ -57,7 +70,7 @@ class DepartmentController extends Controller
     public function create()
     {
         //Show form to add new Sites
-        $sites = \App\Site::pluck('name', 'id')->toArray();
+        $sites = $this->getSites(Auth::user());
         return view('department/create', ['sites' => $sites]);
     }
 
@@ -80,13 +93,17 @@ class DepartmentController extends Controller
 
         $site->department()->save($department);
 
-        $status = new \App\Status;
+        $signed_up_status = new \App\Status;
+        $complete_status = new \App\Status;
 
-        $status->name = 'Signed Up';
+        $signed_up_status->name = 'Signed Up';
+        $complete_status->name = 'Complete';
 
-        $status->list_order = 0;
+        $signed_up_status->list_order = 0;
+        $complete_status->list_order = 0;
 
-        $department->status()->save($status);
+        $department->status()->save($signed_up_status);
+        $department->status()->save($complete_status);
 
         $message = [
             'text' => "Success: Department ".$department->name." has been created.",
@@ -116,7 +133,7 @@ class DepartmentController extends Controller
     public function edit(Department $department)
     {
         //
-        $sites = \App\Site::pluck('name', 'id')->toArray();
+        $sites = $this->getSites(Auth::user());
         $department = Department::with('site')->find($department->id);
         return view('department/edit', ['department' => $department, 'sites' => $sites]);
 

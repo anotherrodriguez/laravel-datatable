@@ -26,5 +26,11 @@ class Status extends Model
     {
         return $this->hasMany('App\Patient');
     }
-
-}
+    public function isSignedUp()
+    {
+        return $this->name === 'Signed Up';
+    }
+    public function isComplete()
+    {
+        return $this->name === 'Complete';
+    }}

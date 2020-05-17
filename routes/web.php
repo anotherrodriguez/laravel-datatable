@@ -21,6 +21,8 @@ Route::get('/statusData', 'StatusController@getData')->name('status.getData');
 
 Route::get('/patientData', 'PatientController@getData')->name('patient.getData');
 
+Route::post('/validatePatient', 'PatientController@validatePatient');
+
 Route::get('/UserData', 'UserController@getData')->name('user.getData');
 
 Route::post('/getDepartments', 'DepartmentController@getDepartments');
@@ -40,4 +42,4 @@ Route::get('/', 'PatientController@create');
 
 Auth::routes(['verify' => true]);
 
-Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/home', 'HomeController@index');

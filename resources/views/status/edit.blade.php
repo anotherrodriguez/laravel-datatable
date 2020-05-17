@@ -10,16 +10,17 @@
 
     <div class="form-group">
       {{ Form::label('inputSite', 'Site Name')}}
-      {{ Form::select('site_id', $sites, $status->department->site->id, ['class' => 'form-control', 'id' => 'site_select']) }}
+      {{ Form::select('site_id', $sites, $status->department->site->id, ['class' => 'form-control', 'id' => 'site_select', 'disabled' => 'disabled']) }}
       {{ Form::label('inputDepartment', 'Department Name')}}
-      {{ Form::select('department_id', $departments, $status->department->id, ['placeholder' => 'Pick a department...', 'class' => 'form-control', 'id' => 'department_select']) }}
+      {{ Form::select('department_id', $departments, $status->department->id, ['placeholder' => 'Pick a department...', 'class' => 'form-control', 'id' => 'department_select', 'disabled' => 'disabled']) }}
       {{ Form::label('inputDepartment', 'Status')}}
       {{ Form::text('name', $value = NULL,['class' => 'form-control', 'id' => 'status_name']) }}
       {{ Form::label('inputSite', 'List Order')}}
               <!-- List with handle -->
-            <div class="list-group" id="listWithHandle"></div>
-
-
+      <div class="list-group" id="list-defaults">
+        <div class="list-group" id="listWithHandle">
+        </div>
+      </div>
 
     </div>
 
@@ -53,13 +54,24 @@
     var i = 0;
 
     function buttonHtml(status, hiddenField){
-      var button = '<button type="button" id="'+status.id+'" class="list-group-item list-group-item-action">'+status.name + hiddenField +'<i class="fas fa-grip-lines float-right mt-1"></i></button>';
-      return button;
+      if(status.name=='Signed Up' | status.name=='Complete'){
+        var button = '<button type="button" class="list-group-item list-group-item-action">'+status.name + hiddenField +'</button>';
+        if(status.name=='Signed Up'){
+          $('#listWithHandle').before(button);
+        }
+        else{
+          $('#listWithHandle').after(button);
+        }
+      }
+      else{
+        var button = '<button type="button" id="'+status.id+'" class="list-group-item sortable list-group-item-action">'+status.name + hiddenField +'<i class="fas fa-grip-lines float-right mt-1"></i></button>';
+        return button;
+      }
     };
 
     function setOrder(){
       var k = 0;
-        $.each($('.status-order'), function(key, status){
+        $.each($('.list-order'), function(key, status){
           status.value = k;
           k++;
         });
@@ -84,9 +96,10 @@
                'department_id':$('#department_select').val()
                 },
                success:function(data) {
+               $('#listWithHandle').html('');
                 $.each(data, function(key, status){
                    var hiddenField = '<input name="status['+i+'][id]" value="'+status.id+'" type="hidden">';
-                  hiddenField += '<input class="status-order" name="status['+i+'][order]" value="'+status.list_order+'" type="hidden">';
+                  hiddenField += '<input class="status-order list-order" name="status['+i+'][order]" value="'+status.list_order+'" type="hidden">';
                   hiddenField += '<input class="status-order" name="status['+i+'][name]" value="'+status.name+'" type="hidden">';
                   var button = buttonHtml(status, hiddenField);
                    $('#listWithHandle').append(button);
@@ -121,7 +134,11 @@
             });
     });
 
-    $('#department_select').change(loadList());
+    loadList();
+
+    $('#department_select').change(function(){
+      loadList();
+    });
 
     
 

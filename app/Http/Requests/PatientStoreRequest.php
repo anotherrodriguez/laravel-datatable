@@ -28,7 +28,23 @@ class PatientStoreRequest extends FormRequest
             'first_name' => ['required', 'max:255'],
             'last_name' => ['required', 'max:255'],
             'notification' => ['required'],
-            'department_id' => ['required']
+            'emails.*' => ['required', 'email:rfc,dns' ],
+            'phone_numbers.*' => ['required', 'phone_number:test'],
+            'department_id' => ['required'],
+            'date_of_service' => ['required'],
+            'site_id' => ['required'],
         ];
     }
+/*
+    public function messages()
+    {
+        return [
+            'emails.*.required' => 'We need your email address',
+            'phone_numbers.*.required' => 'We need your phone number',
+            'phone_numbers.*.phone_number' => 'Incorrect phone number format. Use 000-000-0000',
+            'department_id.required' => 'Please select a department',
+            'date_of_service.required' => 'Please select a date',
+        ];
+    }
+    */
 }

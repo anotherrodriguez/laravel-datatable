@@ -23,7 +23,7 @@
 @section('datatable', true)
 
 @push('datatableOptions')
-          order: [[ 0, 'asc' ]],
+          order: [[ 3, 'asc' ]],
           ajax: '<?php echo route('patient.getData'); ?>',
           columns: [
               { data: 'first_name', 

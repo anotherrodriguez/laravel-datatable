@@ -54,6 +54,14 @@ class DatabaseSeeder extends Seeder
         'updated_at' => now()
     ]);
 
+    DB::table('statuses')->insert([
+        'name' => 'Complete', 
+        'department_id' => '1', 
+        'list_order' => 1,
+        'created_at' => now(),
+        'updated_at' => now()
+    ]);
+
 /*
     $this->call([
         EmailSeeder::class,
