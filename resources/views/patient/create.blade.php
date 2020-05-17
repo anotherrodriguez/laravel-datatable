@@ -114,6 +114,18 @@ if(isset($error['date_of_service'])){
 
       <div class="hide" id="phone-input-block"></div>
 
+        <div class="form-group">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" id="hippa" name="hippa">
+      <label class="form-check-label" for="gridCheck">
+       I hereby authorize Case Follow to release limited information via phone or email to the following representatives. 
+       I have reviewed the medical record information release (HIPPA) information included
+      </label>
+       <span class="invalid-feedback hide" role="alert">
+            <strong id="hippa-error-message">test</strong>
+          </span>
+    </div>
+  </div>
     </div>
 
       <button type="submit" class="btn btn-primary float-right">Submit</button>
